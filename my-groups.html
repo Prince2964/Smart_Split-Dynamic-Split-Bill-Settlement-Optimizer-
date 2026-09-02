@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   My Groups — SplitSmart
+  </title>
+  <link href="css/common.css" rel="stylesheet"/>
+  <link href="css/my-groups.css" rel="stylesheet"/>
+ </head>
+ <body data-page="my-groups">
+  <header id="siteNav">
+  </header>
+  <main class="app-page">
+   <div class="container">
+    <div class="page-header">
+     <div>
+      <span class="eyebrow">
+       Your groups
+      </span>
+      <h1>
+       My Groups
+      </h1>
+      <p class="muted">
+       Every group you created or joined, in one place.
+      </p>
+     </div>
+     <a class="btn btn-primary" href="create-group.html">
+      ＋ New Group
+     </a>
+    </div>
+    <div class="group-filter-bar">
+     <input aria-label="Search groups" id="groupSearch" placeholder="Search groups..." type="search"/>
+     <select aria-label="Filter groups by type" id="groupTypeFilter">
+      <option value="all">
+       All groups
+      </option>
+      <option value="trip">
+       Trip
+      </option>
+      <option value="household">
+       Household
+      </option>
+      <option value="custom">
+       Custom
+      </option>
+     </select>
+     <select aria-label="Sort groups" id="groupSort">
+      <option value="recent">
+       Recently created
+      </option>
+      <option value="az">
+       Group name A-Z
+      </option>
+      <option value="za">
+       Group name Z-A
+      </option>
+     </select>
+     <button class="btn btn-soft btn-sm" id="clearGroupFilters" type="button">
+      Clear Filters
+     </button>
+    </div>
+    <div class="page-toolbar">
+     <span>
+      <strong id="groupsCount">
+       0
+      </strong>
+      groups
+     </span>
+     <span class="muted">
+      Trip · Household · Custom
+     </span>
+    </div>
+    <section class="group-grid" id="allGroupsList">
+    </section>
+   </div>
+  </main>
+  <div class="toast" id="toast">
+  </div>
+  <script src="js/config.js">
+  </script>
+  <script src="js/storage.js">
+  </script>
+  <script src="js/utils.js">
+  </script>
+  <script src="js/auth.js">
+  </script>
+  <script src="js/groups.js">
+  </script>
+  <script src="js/invitations.js">
+  </script>
+  <script src="js/expenses.js">
+  </script>
+  <script src="js/calculations.js">
+  </script>
+  <script src="js/render.js">
+  </script>
+  <script src="js/navigation.js">
+  </script>
+  <script src="js/my-groups.js">
+  </script>
+  <script src="js/app.js">
+  </script>
+ </body>
+</html>
