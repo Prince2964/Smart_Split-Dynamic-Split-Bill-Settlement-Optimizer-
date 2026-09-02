@@ -1,0 +1,100 @@
+.invite-meta-line {
+    font-size:.72rem;
+    color:var(--muted);
+    margin-top:8px
+}
+
+.invite-meta-line code {
+    font-family:ui-monospace,SFMono-Regular,monospace;
+    color:var(--primary);
+    font-weight:800
+}
+
+.sent-invite {
+    background:#fbfbff
+}
+
+.invite-tabs {
+    display:flex;
+    gap:28px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:17px
+}
+
+.invite-tabs span {
+    padding:11px 2px;
+    margin-bottom:-1px;
+    color:#7c8598;
+    font-weight:750
+}
+
+.invite-tabs span.active {
+    color:var(--primary);
+    border-bottom:2px solid var(--primary)
+}
+
+.invite-tabs b {
+    display:inline-grid;
+    place-items:center;
+    min-width:22px;
+    height:22px;
+    border-radius:999px;
+    background:#eff0ff;
+    color:var(--primary);
+    font-size:.7rem;
+    margin-left:5px
+}
+
+.invitations-panel {
+    min-height:220px
+}
+
+.attention-card,.quiet-card {
+    display:flex;
+    align-items:center;
+    gap:13px;
+    padding:15px;
+    border-radius:15px;
+    border:1px solid var(--line)
+}
+
+.attention-card {
+    background:#f4f4ff;
+    border-color:#dedfff
+}
+
+.attention-icon {
+    width:42px;
+    height:42px;
+    border-radius:13px;
+    background:#e7e8ff;
+    color:var(--primary);
+    display:grid;
+    place-items:center;
+    font-size:1.15rem
+}
+
+.attention-card div:nth-child(2),.quiet-card div {
+    flex:1
+}
+
+.attention-card p,.quiet-card p {
+    margin:2px 0 0;
+    color:var(--muted);
+    font-size:.78rem
+}
+
+.quiet-card {
+    background:#f8faf9
+}
+
+.quiet-card>span {
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    background:#e6f8f1;
+    color:var(--green);
+    display:grid;
+    place-items:center;
+    font-weight:900
+}
