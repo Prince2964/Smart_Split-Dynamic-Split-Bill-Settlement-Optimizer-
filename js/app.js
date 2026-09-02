@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
         invitations: () => SS.invitationsPage.init(),
         'create-group': () => SS.createGroupPage.init(),
         group: () => SS.groupPage.init(SS.query('id')),
-        invitation: () => SS.invitationPage.init()
+        invitation: () => SS.invitationPage.init(),
+        'settlement-history': () => SS.settlementHistoryPage.init()
     };
     map[page]?.();
 });
