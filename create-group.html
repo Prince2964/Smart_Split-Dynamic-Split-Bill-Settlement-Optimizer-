@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Create Group — SplitSmart
+  </title>
+  <link href="css/common.css" rel="stylesheet"/>
+  <link href="css/create-group.css" rel="stylesheet"/>
+ </head>
+ <body data-page="create-group">
+  <header id="siteNav">
+  </header>
+  <main class="app-page">
+   <div class="container narrow">
+    <div class="creation-head">
+     <a class="back-link" href="dashboard.html">
+      ← Dashboard
+     </a>
+     <span class="eyebrow">
+      Create something new
+     </span>
+     <h1>
+      What are you splitting?
+     </h1>
+     <p>
+      Start with a purpose. SplitSmart will tailor the details without changing the settlement engine.
+     </p>
+    </div>
+    <div class="purpose-switcher">
+     <button class="purpose-tab active" data-tab="trip">
+      <span>
+       ✈️
+      </span>
+      <b>
+       Trip
+      </b>
+      <small>
+       Travel &amp; adventures
+      </small>
+     </button>
+     <button class="purpose-tab" data-tab="household">
+      <span>
+       🏠
+      </span>
+      <b>
+       Household
+      </b>
+      <small>
+       Shared living costs
+      </small>
+     </button>
+     <button class="purpose-tab" data-tab="custom">
+      <span>
+       ✦
+      </span>
+      <b>
+       Custom
+      </b>
+      <small>
+       Anything else
+      </small>
+     </button>
+    </div>
+    <form class="panel creation-form" id="groupForm">
+     <input id="purpose" name="purpose" type="hidden" value="trip"/>
+     <div id="purposeFields">
+     </div>
+     <div class="thumbnail-section">
+      <div class="form-section-label">
+       Group thumbnail
+      </div>
+      <div class="thumbnail-picker">
+       <div class="thumbnail-preview hide" id="thumbnailPreview">
+        <img alt="Selected group thumbnail" id="thumbnailPreviewImage" src=""/>
+        <button class="thumbnail-remove" id="removeThumbnail" type="button">
+         ×
+        </button>
+       </div>
+       <label class="upload-card" for="groupThumbnail">
+        <span class="upload-icon">
+         ＋
+        </span>
+        <span>
+         <b>
+          Add a group picture
+         </b>
+         <small>
+          Optional · JPG, PNG, WEBP up to 5 MB
+         </small>
+        </span>
+        <input accept="image/*" id="groupThumbnail" type="file"/>
+       </label>
+       <div class="thumbnail-file" id="thumbnailFileName">
+        No picture selected — a SplitSmart default will be used.
+       </div>
+      </div>
+     </div>
+     <div class="form-actions">
+      <a class="btn btn-soft" href="dashboard.html">
+       Cancel
+      </a>
+      <button class="btn btn-primary" type="submit">
+       Create Group
+       <span>
+        →
+       </span>
+      </button>
+     </div>
+    </form>
+   </div>
+  </main>
+  <div class="toast" id="toast">
+  </div>
+  <script src="js/config.js">
+  </script>
+  <script src="js/storage.js">
+  </script>
+  <script src="js/utils.js">
+  </script>
+  <script src="js/auth.js">
+  </script>
+  <script src="js/groups.js">
+  </script>
+  <script src="js/navigation.js">
+  </script>
+  <script src="js/create-group.js">
+  </script>
+  <script src="js/app.js">
+  </script>
+ </body>
+</html>
