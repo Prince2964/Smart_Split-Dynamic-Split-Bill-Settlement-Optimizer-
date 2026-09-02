@@ -4,12 +4,12 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width,initial-scale=1" name="viewport"/>
   <title>
-   My Groups — SplitSmart
+   Invitations — SplitSmart
   </title>
   <link href="css/common.css" rel="stylesheet"/>
-  <link href="css/my-groups.css" rel="stylesheet"/>
+  <link href="css/invitations.css" rel="stylesheet"/>
  </head>
- <body data-page="my-groups">
+ <body data-page="invitations">
   <header id="siteNav">
   </header>
   <main class="app-page">
@@ -17,31 +17,34 @@
     <div class="page-header">
      <div>
       <span class="eyebrow">
-       Your groups
+       Group access
       </span>
       <h1>
-       My Groups
+       Invitations
       </h1>
       <p class="muted">
-       Every group you created or joined, in one place.
+       Accept groups you've been invited to, or track invitations you've sent.
       </p>
      </div>
-     <a class="btn btn-primary" href="create-group.html">
-      ＋ New Group
+     <a class="btn btn-soft" href="my-groups.html">
+      View My Groups →
      </a>
     </div>
-    <div class="page-toolbar">
-     <span>
-      <strong id="groupsCount">
+    <div class="invite-tabs">
+     <span class="active">
+      Received
+      <b id="receivedCount">
        0
-      </strong>
-      groups
+      </b>
      </span>
-     <span class="muted">
-      Trip · Household · Custom
+     <span>
+      Sent
+      <b id="sentCount">
+       0
+      </b>
      </span>
     </div>
-    <section class="group-grid" id="allGroupsList">
+    <section class="panel invitations-panel" id="invitationsList">
     </section>
    </div>
   </main>
@@ -67,7 +70,7 @@
   </script>
   <script src="js/navigation.js">
   </script>
-  <script src="js/my-groups.js">
+  <script src="js/invitations-page.js">
   </script>
   <script src="js/app.js">
   </script>
