@@ -11,6 +11,7 @@ SS.navigation = {
       <a href="my-groups.html" data-nav="groups">My Groups</a>
       <a href="invitations.html" data-nav="invitations">Invitations</a>
       <a href="create-group.html" data-nav="create">Create Group</a>
+      <a href="settlement-history.html" data-nav="history">History</a>
     `;
         const actions = user
             ? `
@@ -35,7 +36,7 @@ SS.navigation = {
         <div class="nav-actions">${actions}</div>
       </div>`;
         const page = document.body.dataset.page;
-        const activeMap = { dashboard: 'dashboard', 'my-groups': 'groups', invitations: 'invitations', 'create-group': 'create' };
+        const activeMap = { dashboard: 'dashboard', 'my-groups': 'groups', invitations: 'invitations', 'create-group': 'create', 'settlement-history': 'history' };
         const active = activeMap[page];
         host.querySelector(`[data-nav="${active}"]`)?.classList.add('active');
         document.getElementById('logoutBtn')?.addEventListener('click', () => SS.auth.logout());
