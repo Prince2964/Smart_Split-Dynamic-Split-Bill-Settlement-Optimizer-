@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Group — SplitSmart
+  </title>
+  <link href="css/common.css" rel="stylesheet"/>
+  <link href="css/group.css" rel="stylesheet"/>
+ </head>
+ <body data-page="group">
+  <header id="siteNav">
+  </header>
+  <main class="app-page">
+   <div class="container" id="groupRoot">
+    <div class="empty-state">
+     Loading group…
+    </div>
+   </div>
+  </main>
+  <div class="modal-backdrop" id="expenseModal">
+   <div class="modal expense-modal">
+    <div class="modal-head">
+     <div>
+      <span class="kicker">
+       Shared expense
+      </span>
+      <h2>
+       Add an expense
+      </h2>
+      <p class="modal-subtitle">
+       Choose how this expense should be shared.
+      </p>
+     </div>
+     <button class="icon-btn" data-close-modal="">
+      ×
+     </button>
+    </div>
+    <form class="form-grid" id="expenseForm">
+     <div class="field">
+      <label>
+       Description
+      </label>
+      <input id="expenseDescription" placeholder="Dinner" required=""/>
+     </div>
+     <div class="form-row">
+      <div class="field">
+       <label>
+        Amount (₹)
+       </label>
+       <input id="expenseAmount" min="0.01" placeholder="2400" required="" step="0.01" type="number"/>
+      </div>
+      <div class="field">
+       <label>
+        Paid by
+       </label>
+       <select id="paidBy">
+       </select>
+      </div>
+     </div>
+     <div class="form-row">
+      <div class="field">
+       <label for="expenseCategory">
+        Category
+       </label>
+       <select id="expenseCategory">
+        <option value="Food">
+         🍽️ Food
+        </option>
+        <option value="Travel">
+         ✈️ Travel
+        </option>
+        <option value="Hotel / Stay">
+         🏨 Hotel / Stay
+        </option>
+        <option value="Shopping">
+         🛍️ Shopping
+        </option>
+        <option value="Entertainment">
+         🎬 Entertainment
+        </option>
+        <option value="Bills">
+         🧾 Bills
+        </option>
+        <option value="Groceries">
+         🛒 Groceries
+        </option>
+        <option value="Transport">
+         🚕 Transport
+        </option>
+        <option value="Healthcare">
+         🏥 Healthcare
+        </option>
+        <option value="Education">
+         📚 Education
+        </option>
+        <option value="Utilities">
+         💡 Utilities
+        </option>
+        <option selected="" value="Other">
+         ✦ Other
+        </option>
+       </select>
+      </div>
+      <div class="field">
+       <label for="expenseNote">
+        Note
+        <span class="muted-small">
+         Optional
+        </span>
+       </label>
+       <input id="expenseNote" placeholder="Add a short note"/>
+      </div>
+     </div>
+     <div class="field recurring-control hide" id="recurringControl">
+      <label class="check">
+       <input id="isRecurring" type="checkbox"/>
+       <span>
+        Make this a recurring expense
+       </span>
+      </label>
+      <small class="field-help">
+       Recurring expenses are available for Household groups only.
+      </small>
+     </div>
+     <div class="recurring-fields hide" id="recurringFields">
+      <div class="form-row">
+       <div class="field">
+        <label>
+         Frequency
+        </label>
+        <select id="recurringFrequency">
+         <option value="weekly">
+          Weekly
+         </option>
+         <option selected="" value="monthly">
+          Monthly
+         </option>
+         <option value="yearly">
+          Yearly
+         </option>
+        </select>
+       </div>
+       <div class="field">
+        <label>
+         Start Date
+        </label>
+        <input id="recurringStartDate" type="date"/>
+       </div>
+      </div>
+      <div class="form-row">
+       <div class="field">
+        <label>
+         Next Due Date
+        </label>
+        <input id="recurringNextDueDate" type="date"/>
+       </div>
+       <div class="field">
+        <label>
+         End Date
+         <span class="muted-small">
+          Optional
+         </span>
+        </label>
+        <input id="recurringEndDate" type="date"/>
+       </div>
+      </div>
+     </div>
+     <div class="field">
+      <label for="splitMode">
+       Split method
+      </label>
+      <select id="splitMode" name="splitMode">
+       <option value="equal">
+        Split equally
+       </option>
+       <option value="manual">
+        Select manually
+       </option>
+      </select>
+      <small class="field-help">
+       Choose equal sharing or enter a custom amount for each person.
+      </small>
+     </div>
+     <div class="field">
+      <div class="participants-head">
+       <label>
+        Participants
+       </label>
+       <span class="muted-small">
+        Who shares this expense?
+       </span>
+      </div>
+      <div class="check-list participant-grid" id="participants">
+      </div>
+     </div>
+     <div class="manual-shares hide" id="manualShares">
+     </div>
+     <div class="split-hint hide" id="manualShareHint">
+     </div>
+     <div class="form-error" id="expenseError">
+     </div>
+     <div class="modal-actions">
+      <button class="btn btn-soft" data-close-modal="" type="button">
+       Cancel
+      </button>
+      <button class="btn btn-primary" type="submit">
+       Add Expense
+      </button>
+     </div>
+    </form>
+   </div>
+  </div>
+  <div class="modal-backdrop" id="inviteModal">
+   <div class="modal">
+    <div class="modal-head">
+     <div>
+      <span class="kicker">
+       Group access
+      </span>
+      <h2>
+       Invite a member
+      </h2>
+     </div>
+     <button class="icon-btn" data-close-modal="">
+      ×
+     </button>
+    </div>
+    <p class="muted">
+     Enter the exact email the person will use to create or log into their local SplitSmart account.
+    </p>
+    <form class="form-grid" id="inviteForm">
+     <div class="form-row">
+      <div class="field">
+       <label>
+        Name
+       </label>
+       <input id="inviteName" placeholder="Mayank" required=""/>
+      </div>
+      <div class="field">
+       <label>
+        Email
+       </label>
+       <input id="inviteEmail" placeholder="mayank@example.com" required="" type="email"/>
+      </div>
+     </div>
+     <div class="form-error" id="inviteError">
+     </div>
+     <button class="btn btn-primary" type="submit">
+      Create Demo Invitation
+     </button>
+    </form>
+    <div id="inviteResults">
+    </div>
+   </div>
+  </div>
+  <div class="toast" id="toast">
+  </div>
+  <script src="js/config.js">
+  </script>
+  <script src="js/storage.js">
+  </script>
+  <script src="js/utils.js">
+  </script>
+  <script src="js/auth.js">
+  </script>
+  <script src="js/groups.js">
+  </script>
+  <script src="js/invitations.js">
+  </script>
+  <script src="js/expenses.js">
+  </script>
+  <script src="js/recurring.js">
+  </script>
+  <script src="js/calculations.js">
+  </script>
+  <script src="js/navigation.js">
+  </script>
+  <script src="js/render.js">
+  </script>
+  <script src="js/group-page.js">
+  </script>
+  <script src="js/app.js">
+  </script>
+ </body>
+</html>

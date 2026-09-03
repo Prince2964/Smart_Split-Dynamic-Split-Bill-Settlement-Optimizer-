@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Sign Up — SplitSmart
+  </title>
+  <link href="css/common.css" rel="stylesheet"/>
+  <link href="css/auth.css" rel="stylesheet"/>
+  <link href="css/signup.css" rel="stylesheet"/>
+ </head>
+ <body data-page="signup">
+  <main class="auth-shell">
+   <section class="auth-brand">
+    <a class="brand" href="index.html">
+     <span class="brand-mark">
+      S
+     </span>
+     SplitSmart
+    </a>
+    <div>
+     <span class="eyebrow dark-eyebrow">
+      Start splitting smarter
+     </span>
+     <h1>
+      Your group bills,
+      <br/>
+      <span>
+       finally organized.
+      </span>
+     </h1>
+     <p>
+      Create your local demo account and build a group in minutes.
+     </p>
+    </div>
+    <div class="auth-benefits">
+     <span>
+      ✓ Smart debt simplification
+     </span>
+     <span>
+      ✓ Invite-by-email simulation
+     </span>
+     <span>
+      ✓ Data survives refresh
+     </span>
+    </div>
+   </section>
+   <section class="auth-panel">
+    <a class="back-link" href="index.html">
+     ← Back to home
+    </a>
+    <div class="auth-content">
+     <span class="eyebrow">
+      Create account
+     </span>
+     <h2>
+      Get started
+     </h2>
+     <p class="muted">
+      Your data stays in this browser for Phase 1.
+     </p>
+     <form class="form-grid" id="signupForm">
+      <div class="field">
+       <label>
+        Full name
+       </label>
+       <input autocomplete="name" name="name" placeholder="Prince Pathneja" required=""/>
+      </div>
+      <div class="field">
+       <label>
+        Email
+       </label>
+       <input autocomplete="email" name="email" placeholder="prince@example.com" required="" type="email"/>
+      </div>
+      <div class="form-row">
+       <div class="field">
+        <label>
+         Password
+        </label>
+        <input autocomplete="new-password" name="password" placeholder="Minimum 6 characters" required="" type="password"/>
+       </div>
+       <div class="field">
+        <label>
+         Confirm password
+        </label>
+        <input autocomplete="new-password" name="confirmPassword" placeholder="Repeat password" required="" type="password"/>
+       </div>
+      </div>
+      <div class="form-error" id="formError">
+      </div>
+      <button class="btn btn-primary" type="submit">
+       Create Account
+       <span>
+        →
+       </span>
+      </button>
+     </form>
+     <p class="switch-auth">
+      Already have an account?
+      <a href="login.html">
+       Log in
+      </a>
+     </p>
+    </div>
+   </section>
+  </main>
+  <script src="js/config.js">
+  </script>
+  <script src="js/storage.js">
+  </script>
+  <script src="js/utils.js">
+  </script>
+  <script src="js/auth.js">
+  </script>
+  <script src="js/auth-pages.js">
+  </script>
+  <script src="js/app.js">
+  </script>
+ </body>
+</html>
