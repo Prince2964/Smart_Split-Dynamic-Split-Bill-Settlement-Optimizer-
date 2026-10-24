@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SplitSmart — Demo Data Seeder</title>
+  <script src="js/config.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/budget.js"></script>
+  <script src="js/groups.js"></script>
+  <script src="js/expenses.js"></script>
+  <script>
+    window.onload = function() {
+      const user = {
+        id: 'USR-demo',
+        name: 'Priya Sharma',
+        email: 'priya@example.com',
+        password: 'password123',
+        createdAt: new Date().toISOString()
+      };
+      SS.storage.replaceUsers([user]);
+      SS.storage.setCurrentUser(user.id);
+
+      // Group 1: Goa Vacation 2026 (At 82% budget -> Triggers 80% warning banner)
+      const group1 = {
+        id: 'GRP-goa2026',
+        name: 'Goa Vacation 2026',
+        purpose: 'trip',
+        creator: user.id,
+        creatorName: user.name,
+        createdAt: new Date().toISOString(),
+        thumbnail: '',
+        members: [{ userId: user.id, name: user.name, email: user.email, status: 'accepted', joinedAt: new Date().toISOString() }],
+        expenses: [
+          {
+            id: 'EXP-1',
+            description: 'Beach Resort Stay',
+            amount: 25000,
+            category: 'Hotel / Stay',
+            paidBy: user.id,
+            paidByName: user.name,
+            participants: [user.id],
+            splitMode: 'equal',
+            date: new Date().toISOString()
+          },
+          {
+            id: 'EXP-2',
+            description: 'Flight Tickets',
+            amount: 16000,
+            category: 'Travel',
+            paidBy: user.id,
+            paidByName: user.name,
+            participants: [user.id],
+            splitMode: 'equal',
+            date: new Date().toISOString()
+          }
+        ],
+        settlementStatuses: {},
+        budget: {
+          total: 50000,
+          categories: {
+            'Travel': 15000,
+            'Hotel / Stay': 25000,
+            'Food': 6000,
+            'Activities': 4000
+          }
+        },
+        meta: { destination: 'Goa' }
+      };
+
+      // Group 2: Manali Trek (Spent 53k on 50k budget -> Triggers >100% overspending alert)
+      const group2 = {
+        id: 'GRP-trek2026',
+        name: 'Manali & Kasol Trek',
+        purpose: 'trip',
+        creator: user.id,
+        creatorName: user.name,
+        createdAt: new Date().toISOString(),
+        thumbnail: '',
+        members: [{ userId: user.id, name: user.name, email: user.email, status: 'accepted', joinedAt: new Date().toISOString() }],
+        expenses: [
+          {
+            id: 'EXP-3',
+            description: 'River Rafting & Paragliding',
+            amount: 15000,
+            category: 'Activities',
+            paidBy: user.id,
+            paidByName: user.name,
+            participants: [user.id],
+            splitMode: 'equal',
+            date: new Date().toISOString()
+          },
+          {
+            id: 'EXP-4',
+            description: 'Mountain Cottage',
+            amount: 20000,
+            category: 'Hotel / Stay',
+            paidBy: user.id,
+            paidByName: user.name,
+            participants: [user.id],
+            splitMode: 'equal',
+            date: new Date().toISOString()
+          },
+          {
+            id: 'EXP-5',
+            description: 'Local Cafes & Dining',
+            amount: 18000,
+            category: 'Food',
+            paidBy: user.id,
+            paidByName: user.name,
+            participants: [user.id],
+            splitMode: 'equal',
+            date: new Date().toISOString()
+          }
+        ],
+        settlementStatuses: {},
+        budget: {
+          total: 50000,
+          categories: {
+            'Travel': 10000,
+            'Hotel / Stay': 20000,
+            'Food': 12000,
+            'Activities': 8000
+          }
+        },
+        meta: { destination: 'Manali' }
+      };
+
+      // Group 3: Household Flat (No budget set -> Demonstrates backward compatibility)
+      const group3 = {
+        id: 'GRP-home401',
+        name: 'Flat 401 Apartments',
+        purpose: 'household',
+        creator: user.id,
+        creatorName: user.name,
+        createdAt: new Date().toISOString(),
+        thumbnail: '',
+        members: [{ userId: user.id, name: user.name, email: user.email, status: 'accepted', joinedAt: new Date().toISOString() }],
+        expenses: [
+          {
+            id: 'EXP-6',
+            description: 'Monthly Wi-Fi Internet',
+            amount: 1499,
+            category: 'Bills',
+            paidBy: user.id,
+            paidByName: user.name,
+            participants: [user.id],
+            splitMode: 'equal',
+            date: new Date().toISOString()
+          }
+        ],
+        settlementStatuses: {},
+        meta: { address: 'Sector 42' }
+      };
+
+      SS.storage.replaceGroups([group1, group2, group3]);
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('to') || 'dashboard.html';
+      window.location.href = redirect;
+    };
+  </script>
+</head>
+<body style="font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 80vh;">
+  <p style="font-size: 1.1rem; color: #555;">Initializing demo data for SplitSmart Budget System...</p>
+</body>
+</html>
