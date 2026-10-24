@@ -1,0 +1,510 @@
+/* ==========================================================================
+   SplitSmart Phase 1.7 - Budget System Styling
+   Consistent with SplitSmart tokens: --primary, --surface, --line, --shadow
+   ========================================================================== */
+
+/* --- Create Group Form: Budget Section --- */
+.budget-section {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--line);
+}
+
+.budget-section-desc {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: -4px 0 14px;
+}
+
+.category-budgets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+    .category-budgets-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Group Page: Budget Panel --- */
+.budget-panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius, 22px);
+    box-shadow: var(--shadow-sm);
+    padding: 24px;
+    margin-bottom: 22px;
+}
+
+.budget-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.budget-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Status Badges */
+.status-pill.status-success {
+    background: #edf9f1;
+    color: #1a7f45;
+    border: 1px solid #b7e8c7;
+}
+
+.status-pill.status-warning {
+    background: #fff8e8;
+    color: #b87d18;
+    border: 1px solid #fedf9a;
+}
+
+.status-pill.status-danger {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    font-weight: 700;
+}
+
+.status-pill.status-muted {
+    background: var(--surface2, #f1f3f8);
+    color: var(--muted, #6e778b);
+    border: 1px solid var(--line, #e5e8ef);
+}
+
+/* Inline Alert Banners */
+.budget-alert-banner {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 18px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    animation: alertIn 0.25s ease both;
+}
+
+@keyframes alertIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.budget-alert-banner .alert-icon {
+    font-size: 1.5rem;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+}
+
+.budget-alert-banner.alert-warning {
+    background: #fffbf0;
+    border: 1px solid #f6cf7d;
+    color: #8c5b05;
+}
+
+.budget-alert-banner.alert-warning .alert-icon {
+    background: #feefc3;
+}
+
+.budget-alert-banner.alert-danger {
+    background: #fff5f5;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.budget-alert-banner.alert-danger .alert-icon {
+    background: #fee2e2;
+}
+
+.budget-alert-banner .alert-content strong {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.budget-alert-banner .alert-content p {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Metrics Grid */
+.budget-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+@media (max-width: 900px) {
+    .budget-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .budget-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.budget-metric-card {
+    background: var(--surface2, #f1f3f8);
+    border: 1px solid var(--line, #e5e8ef);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: transform 0.15s ease;
+}
+
+.budget-metric-card:hover {
+    transform: translateY(-1px);
+}
+
+.budget-metric-card .metric-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.budget-metric-card .metric-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+}
+
+.budget-metric-card .metric-helper {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.text-danger {
+    color: #dc2626 !important;
+}
+
+.text-warning {
+    color: #b87d18 !important;
+}
+
+.text-success {
+    color: #16a34a !important;
+}
+
+/* Overall Progress Bar */
+.budget-overall-progress {
+    background: #fafbfe;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+}
+
+.progress-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.86rem;
+    margin-bottom: 9px;
+}
+
+.progress-info-row span {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.progress-info-row strong {
+    color: var(--text);
+}
+
+.budget-progress-track {
+    background: #e9ecf3;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+}
+
+.budget-progress-track.main-track {
+    height: 12px;
+}
+
+.budget-progress-track.cat-track {
+    height: 7px;
+    margin-top: 10px;
+}
+
+.budget-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.budget-progress-fill.progress-normal {
+    background: linear-gradient(90deg, #5b5ce2, #7778f0);
+}
+
+.budget-progress-fill.progress-warning {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.budget-progress-fill.progress-danger {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.budget-threshold-mark {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 2px;
+    background: rgba(184, 125, 24, 0.7);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.budget-threshold-mark span {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: #b87d18;
+    background: #fff8e8;
+    padding: 1px 4px;
+    border-radius: 4px;
+    border: 1px solid #f6cf7d;
+}
+
+/* Category-wise Budgets */
+.category-budgets-section {
+    margin-top: 10px;
+}
+
+.cat-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+}
+
+.cat-section-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.cat-section-header small {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.category-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+@media (max-width: 1024px) {
+    .category-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 540px) {
+    .category-cards-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.budget-cat-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+
+.budget-cat-card:hover {
+    border-color: #cbd0dc;
+    box-shadow: 0 4px 16px rgba(30, 40, 75, 0.05);
+}
+
+.budget-cat-card.card-danger {
+    border-color: #fca5a5;
+    background: #fffbfb;
+}
+
+.budget-cat-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.budget-cat-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.budget-cat-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.budget-cat-title strong {
+    font-size: 0.92rem;
+    color: var(--text);
+}
+
+.cat-pill {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.pill-danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.pill-warning {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.pill-subtle {
+    background: #edf9f1;
+    color: #166534;
+}
+
+.pill-muted {
+    background: var(--surface2);
+    color: var(--muted);
+}
+
+.budget-cat-amounts {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.amount-label {
+    display: block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+}
+
+.amount-val {
+    font-size: 0.95rem;
+    font-weight: 750;
+    color: var(--text);
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Other spending block */
+.other-spending-block {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+}
+
+.other-spending-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.other-spending-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.other-cat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+}
+
+.other-cat-item b {
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* --- Budget System Responsive Enhancements for Tablet & Mobile --- */
+@media (max-width: 768px) {
+    .budget-panel {
+        padding: 18px;
+        border-radius: 18px;
+    }
+    .budget-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .budget-head-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 500px) {
+    .budget-panel {
+        padding: 15px;
+        border-radius: 16px;
+    }
+    .budget-alert-banner {
+        grid-template-columns: 32px 1fr;
+        padding: 12px 14px;
+        gap: 10px;
+    }
+    .budget-alert-banner .alert-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1.25rem;
+    }
+    .budget-metric-card {
+        padding: 14px;
+    }
+    .budget-cat-card {
+        padding: 13px;
+    }
+}
