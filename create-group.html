@@ -8,6 +8,7 @@
   </title>
   <link href="css/common.css" rel="stylesheet"/>
   <link href="css/create-group.css" rel="stylesheet"/>
+  <link href="css/budget.css" rel="stylesheet"/>
  </head>
  <body data-page="create-group">
   <header id="siteNav">
@@ -67,6 +68,46 @@
      <input id="purpose" name="purpose" type="hidden" value="trip"/>
      <div id="purposeFields">
      </div>
+     <div class="budget-section" id="budgetSection">
+      <div class="form-section-label">
+       Budget details <small>(Optional)</small>
+      </div>
+      <p class="budget-section-desc">
+       Set an estimated overall budget and optional category limits to keep spending on track.
+      </p>
+      <div class="field">
+       <label for="budgetTotal">
+        Estimated Total Budget (₹)
+       </label>
+       <input id="budgetTotal" min="0" name="budgetTotal" placeholder="e.g. 50000" step="0.01" type="number"/>
+      </div>
+      <div class="category-budgets-grid">
+       <div class="field">
+        <label for="budgetCategory_Travel">
+         ✈️ Travel (₹)
+        </label>
+        <input id="budgetCategory_Travel" min="0" name="budgetCategory_Travel" placeholder="0.00" step="0.01" type="number"/>
+       </div>
+       <div class="field">
+        <label for="budgetCategory_Hotel">
+         🏨 Hotel / Stay (₹)
+        </label>
+        <input id="budgetCategory_Hotel" min="0" name="budgetCategory_Hotel" placeholder="0.00" step="0.01" type="number"/>
+       </div>
+       <div class="field">
+        <label for="budgetCategory_Food">
+         🍽️ Food (₹)
+        </label>
+        <input id="budgetCategory_Food" min="0" name="budgetCategory_Food" placeholder="0.00" step="0.01" type="number"/>
+       </div>
+       <div class="field">
+        <label for="budgetCategory_Activities">
+         🎯 Activities (₹)
+        </label>
+        <input id="budgetCategory_Activities" min="0" name="budgetCategory_Activities" placeholder="0.00" step="0.01" type="number"/>
+       </div>
+      </div>
+     </div>
      <div class="thumbnail-section">
       <div class="form-section-label">
        Group thumbnail
@@ -120,6 +161,8 @@
   <script src="js/utils.js">
   </script>
   <script src="js/auth.js">
+  </script>
+  <script src="js/budget.js">
   </script>
   <script src="js/groups.js">
   </script>
