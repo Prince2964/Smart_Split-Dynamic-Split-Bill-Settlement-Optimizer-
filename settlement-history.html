@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   Settlement History — SplitSmart
+  </title>
+  <link href="css/common.css" rel="stylesheet"/>
+  <link href="css/settlement-history.css" rel="stylesheet"/>
+ </head>
+ <body data-page="settlement-history">
+  <header id="siteNav">
+  </header>
+  <main class="app-page">
+   <div class="container">
+    <div class="page-header">
+     <div>
+      <span class="eyebrow">
+       Completed payments
+      </span>
+      <h1>
+       Settlement History
+      </h1>
+      <p class="muted">
+       A browser-local record of settlements marked as paid.
+      </p>
+     </div>
+     <a class="btn btn-soft" href="dashboard.html">
+      ← Dashboard
+     </a>
+    </div>
+    <div class="history-filter-bar">
+     <select aria-label="Filter by group" id="historyGroupFilter">
+      <option value="all">
+       All groups
+      </option>
+     </select>
+     <select aria-label="Filter by member" id="historyMemberFilter">
+      <option value="all">
+       All members
+      </option>
+     </select>
+     <select aria-label="Filter by status" id="historyStatusFilter">
+      <option value="all">
+       All statuses
+      </option>
+      <option value="paid">
+       Paid
+      </option>
+     </select>
+     <input aria-label="From date" id="historyDateFrom" type="date"/>
+     <input aria-label="To date" id="historyDateTo" type="date"/>
+     <button class="btn btn-soft btn-sm" id="clearHistoryFilters" type="button">
+      Clear Filters
+     </button>
+    </div>
+    <div class="page-toolbar">
+     <span>
+      <strong id="historyCount">
+       0
+      </strong>
+      completed settlements
+     </span>
+     <span class="muted">
+      LocalStorage history
+     </span>
+    </div>
+    <section class="history-list" id="settlementHistoryList">
+    </section>
+   </div>
+  </main>
+  <script src="js/config.js">
+  </script>
+  <script src="js/storage.js">
+  </script>
+  <script src="js/utils.js">
+  </script>
+  <script src="js/auth.js">
+  </script>
+  <script src="js/groups.js">
+  </script>
+  <script src="js/expenses.js">
+  </script>
+  <script src="js/calculations.js">
+  </script>
+  <script src="js/navigation.js">
+  </script>
+  <script src="js/settlement-history.js">
+  </script>
+  <script src="js/app.js">
+  </script>
+ </body>
+</html>

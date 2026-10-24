@@ -1,0 +1,5 @@
+/* Signup page-specific styles. Shared authentication styles live in auth.css. */
+
+.auth-content .btn-primary {
+    width: 100%;
+}

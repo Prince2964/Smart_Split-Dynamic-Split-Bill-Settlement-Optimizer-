@@ -33,24 +33,9 @@ SS.groups = {
             thumbnail: data.thumbnail || '',
             members: [{ userId: user.id, name: user.name, email: user.email, status: 'accepted', joinedAt: now }],
             expenses: [],
+            // A keyed status map avoids duplicate settlement records while keeping
+            // payment state separate from calculated debt.
             settlementStatuses: {},
-            budget: data.budget ? {
-                total: Number(data.budget.total) || 0,
-                categories: {
-                    'Travel': Number(data.budget.categories?.['Travel']) || 0,
-                    'Hotel / Stay': Number(data.budget.categories?.['Hotel / Stay']) || 0,
-                    'Food': Number(data.budget.categories?.['Food']) || 0,
-                    'Activities': Number(data.budget.categories?.['Activities']) || 0
-                }
-            } : {
-                total: 0,
-                categories: {
-                    'Travel': 0,
-                    'Hotel / Stay': 0,
-                    'Food': 0,
-                    'Activities': 0
-                }
-            },
             meta: {
                 destination: String(data.destination || '').trim(),
                 startDate: data.startDate || '',
