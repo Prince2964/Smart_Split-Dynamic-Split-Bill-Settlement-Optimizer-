@@ -72,7 +72,7 @@ SS.createGroupPage = {
                 submit.innerHTML = 'Creating…';
                 d.thumbnail = await SS.readImageAsDataUrl(fileInput?.files[0]);
                 d.budget = SS.budget.parseBudgetFormData(d);
-                const g = SS.groups.create(d);
+                const g = await SS.groups.createRemote(d);
                 location.href = `group.html?id=${encodeURIComponent(g.id)}&new=1`;
             }
             catch (x) {

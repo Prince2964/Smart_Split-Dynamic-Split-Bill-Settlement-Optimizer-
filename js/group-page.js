@@ -1,14 +1,80 @@
 SS.groupPage = {
     editingExpenseId: null,
     editingShares: {},
+    expenseFilters: { search: '', category: 'all', payer: 'all', dateFrom: '', dateTo: '', minAmount: '', maxAmount: '', sort: 'newest' },
+    
     init(id) {
-        if (!SS.requireAuth())
-            return;
+        if (!SS.requireAuth()) return;
+
         SS.navigation.render();
         this.bindRootActions(id);
-        this.render(id);
         this.modals();
+        this.loadRemoteGroup(id);
     },
+
+    
+    async loadRemoteGroup(id) {
+        const root = document.getElementById("groupRoot");
+
+        if (!id) {
+            this.render(id);
+            return;
+        }
+
+        if (root) {
+            root.innerHTML = `
+                <div class="panel empty-state">
+                    <h3>Loading group...</h3>
+                    <p>Fetching the latest group details.</p>
+                </div>
+            `;
+        }
+
+        try {
+            const [groupResponse, expenseResponse] = await Promise.all([
+                SS.api.request(`/groups/${encodeURIComponent(id)}`),
+                SS.api.request(`/group-expenses/${encodeURIComponent(id)}`)
+            ]);
+
+            if (!groupResponse.group) {
+                throw new Error("Group data was not returned by the server.");
+            }
+
+            const group = SS.groups.fromApi(groupResponse.group);
+
+            group.expenses = (expenseResponse.expenses || []).map(expense => SS.expenses.fromApi(expense));
+
+            const cachedGroups = SS.storage.groups().filter(
+                item => item.id !== group.id
+            );
+
+            cachedGroups.push(group);
+            SS.storage.replaceGroups(cachedGroups);
+
+            this.render(group.id);
+        } catch (error) {
+            console.error("Failed to load group details:", error);
+
+            if (root) {
+                root.innerHTML = `
+                    <div class="panel empty-state">
+                        <h3>Could not load group</h3>
+                        <p>${SS.escape(error.message)}</p>
+                        <button class="btn btn-primary" id="retryGroupLoad">
+                            Try Again
+                        </button>
+                        <a class="btn btn-soft" href="my-groups.html">
+                            Back to My Groups
+                        </a>
+                    </div>
+                `;
+
+                document.getElementById("retryGroupLoad")
+                    ?.addEventListener("click", () => this.loadRemoteGroup(id));
+            }
+        }
+    },
+
     bindRootActions(id) {
         const root = document.getElementById('groupRoot');
         if (!root || root.dataset.bound === '1')
@@ -31,19 +97,24 @@ SS.groupPage = {
         });
     },
     render(id) {
-        const group = SS.group(id);
+        const rawGroup = SS.group(id);
+        if (rawGroup) SS.expenses.normalizeGroup(rawGroup);
+        const freshGroup = SS.group(id);
+        const activeGroup = freshGroup || rawGroup;
         const root = document.getElementById('groupRoot');
         const user = SS.currentUser();
         if (!root)
             return;
-        if (!group) {
+        if (!activeGroup) {
             root.innerHTML = '<div class="panel empty-state"><h3>Group not found</h3><p>The group may have been removed.</p><a class="btn btn-primary" href="my-groups.html">Back to My Groups</a></div>';
             return;
         }
-        if (!user || !SS.groups.member(group, user.id)) {
+        const currentGroup = activeGroup;
+        if (!user || !SS.groups.member(currentGroup, user.id)) {
             location.href = 'dashboard.html';
             return;
         }
+        const group = currentGroup;
         const activeMembers = SS.groups.activeMembers(group);
         const total = (group.expenses || []).reduce((s, e) => s + (Number.isFinite(Number(e.amount)) ? Number(e.amount) : 0), 0);
         const balances = SS.calculations.balances(group);
@@ -78,9 +149,22 @@ SS.groupPage = {
         <div class="my-balance ${myBalance > .009 ? 'receive' : myBalance < -.009 ? 'owe' : 'settled'}"><span>Your balance</span><strong>${myBalance > .009 ? '+' : ''}${SS.money(myBalance)}</strong><small>${myBalance > .009 ? 'You receive' : myBalance < -.009 ? 'You owe' : 'All settled'}</small></div>
       </div>
 
+      <div id="groupBudgetRoot"></div>
+
       <div class="group-main-grid">
         <section class="panel">
           <div class="panel-head"><div><span class="kicker">Activity</span><h2>Expense history</h2></div><button class="btn btn-primary btn-sm" id="openExpense2">＋ Add Expense</button></div>
+          <div class="expense-toolbar" id="expenseToolbar">
+            <input id="expenseSearch" type="search" placeholder="Search expenses..." value="${SS.escape(this.expenseFilters.search)}">
+            <select id="expenseCategoryFilter"><option value="all">All categories</option>${SS.expenseCategories.map(item => `<option value="${SS.escape(item.value)}" ${this.expenseFilters.category === item.value ? 'selected' : ''}>${item.icon} ${SS.escape(item.value)}</option>`).join('')}</select>
+            <select id="expensePayerFilter"><option value="all">All payers</option>${activeMembers.map(member => `<option value="${SS.escape(member.userId)}" ${this.expenseFilters.payer === member.userId ? 'selected' : ''}>${SS.escape(member.name)}</option>`).join('')}</select>
+            <select id="expenseSort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="highest">Highest amount</option><option value="lowest">Lowest amount</option><option value="az">A-Z</option><option value="za">Z-A</option></select>
+            <input id="expenseDateFrom" type="date" title="From date" value="${SS.escape(this.expenseFilters.dateFrom)}">
+            <input id="expenseDateTo" type="date" title="To date" value="${SS.escape(this.expenseFilters.dateTo)}">
+            <input id="expenseMin" type="number" min="0" step="0.01" placeholder="Min ₹" value="${SS.escape(this.expenseFilters.minAmount)}">
+            <input id="expenseMax" type="number" min="0" step="0.01" placeholder="Max ₹" value="${SS.escape(this.expenseFilters.maxAmount)}">
+            <button class="btn btn-soft btn-sm" id="clearExpenseFilters" type="button">Clear Filters</button>
+          </div>
           <div id="expenses"></div>
         </section>
         <aside class="panel members-panel">
@@ -93,6 +177,8 @@ SS.groupPage = {
         </aside>
       </div>
 
+      ${group.purpose === 'household' ? `<section class="panel recurring-panel"><div class="panel-head"><div><span class="kicker">Household automation</span><h2>Recurring expenses</h2><p>Generate a due occurrence when you are ready. Nothing is created automatically on refresh.</p></div></div><div id="recurringDue"></div></section>` : ''}
+
       <section class="panel balance-panel">
         <div class="panel-head"><div><span class="kicker">Financial position</span><h2>Balances</h2></div><span class="formula">Paid − Share = Balance</span></div>
         <div class="balance-row balance-head"><span>Member</span><span>Paid</span><span class="desktop-only">Share</span><span>Balance</span></div>
@@ -104,14 +190,31 @@ SS.groupPage = {
         <div class="before-after"><div><span class="compare-label">BEFORE · RAW BALANCES</span><div class="raw-list">${balances.map(b => `<div><span>${SS.escape(b.name)}</span><strong class="${b.balance > .009 ? 'positive' : b.balance < -.009 ? 'negative' : 'zero'}">${b.balance > .009 ? '+' : ''}${SS.money(b.balance)}</strong></div>`).join('')}</div></div><div class="compare-arrow">→</div><div><span class="compare-label">AFTER · OPTIMIZED</span><div id="settlement" class="settlement-list"></div></div></div>
       </section>`;
         SS.render.expenses(group, document.getElementById('expenses'), {
+            filters: this.expenseFilters,
             onEdit: expenseId => this.openExpense(SS.group(id), SS.group(id)?.expenses.find(e => e.id === expenseId) || null),
+            onDuplicate: expenseId => this.duplicateExpense(SS.group(id), SS.group(id)?.expenses.find(e => e.id === expenseId) || null),
+            onDelete: expenseId => this.deleteExpenseRemote(id, expenseId),
+            onUndo: expense => this.restoreExpenseRemote(id, expense),
             onChanged: () => this.render(id)
         });
         SS.render.balances(balances, document.getElementById('balances'));
         SS.render.settlement(settlements, document.getElementById('settlement'), group, { onChanged: () => this.render(id) });
+        this.renderRecurring(group, id);
+        this.bindExpenseFilters(id);
+        SS.budget.renderSummary(group, document.getElementById('groupBudgetRoot'), () => this.render(id));
+        SS.budget.checkAlerts(group);
         document.getElementById('openExpense')?.addEventListener('click', () => this.openExpense(SS.group(id)));
         document.getElementById('openExpense2')?.addEventListener('click', () => this.openExpense(SS.group(id)));
         document.getElementById('inviteBtn')?.addEventListener('click', () => this.openInvite());
+    },
+    async deleteExpenseRemote(groupId, expenseId) {
+        const deleted = await SS.expenses.removeRemote(groupId, expenseId);
+        await this.loadRemoteGroup(groupId);
+        return deleted;
+    },
+    async restoreExpenseRemote(groupId, expense) {
+        await SS.expenses.restoreRemote(groupId, expense);
+        await this.loadRemoteGroup(groupId);
     },
     deleteGroup(group) {
         if (group.creator !== SS.currentUser()?.id)
@@ -150,7 +253,7 @@ SS.groupPage = {
         });
         const ef = document.getElementById('expenseForm');
         if (ef)
-            ef.addEventListener('submit', e => {
+            ef.addEventListener('submit', async e => {
                 e.preventDefault();
                 const id = SS.query('id');
                 const splitMode = document.getElementById('splitMode')?.value || 'equal';
@@ -163,26 +266,43 @@ SS.groupPage = {
                     paidBy: document.getElementById('paidBy').value,
                     participants,
                     splitMode,
-                    shares
+                    shares,
+                    category: document.getElementById('expenseCategory')?.value || 'Other',
+                    note: document.getElementById('expenseNote')?.value || '',
+                    isRecurring: document.getElementById('isRecurring')?.checked || false,
+                    frequency: document.getElementById('recurringFrequency')?.value || '',
+                    startDate: document.getElementById('recurringStartDate')?.value || '',
+                    nextDueDate: document.getElementById('recurringNextDueDate')?.value || '',
+                    endDate: document.getElementById('recurringEndDate')?.value || ''
                 };
                 const error = document.getElementById('expenseError');
                 error.textContent = '';
+                const submit = ef.querySelector('button[type="submit"]');
+                if (submit) {
+                    submit.disabled = true;
+                    submit.dataset.originalText = submit.textContent;
+                    submit.textContent = 'Saving...';
+                }
                 try {
                     if (this.editingExpenseId) {
-                        SS.expenses.update(id, this.editingExpenseId, payload);
-                        SS.toast('Expense updated. Balances recalculated.');
-                    }
-                    else {
-                        SS.expenses.add(id, payload);
-                        SS.toast('Expense added. Balances updated.');
+                        await SS.expenses.updateRemote(id, this.editingExpenseId, payload);
+                        SS.notifications.success('Expense updated successfully');
+                    } else {
+                        await SS.expenses.createRemote(id, payload);
+                        SS.notifications.success('Expense added successfully');
                     }
                     document.getElementById('expenseModal').classList.remove('open');
                     this.editingExpenseId = null;
                     this.editingShares = {};
-                    this.render(id);
-                }
-                catch (x) {
-                    error.textContent = x.message;
+                    await this.loadRemoteGroup(id);
+                } catch (x) {
+                    error.textContent = x.message || 'Could not save expense. Please try again.';
+                } finally {
+                    if (submit) {
+                        submit.disabled = false;
+                        submit.textContent = submit.dataset.originalText || 'Save Expense';
+                        delete submit.dataset.originalText;
+                    }
                 }
             });
         document.getElementById('splitMode')?.addEventListener('change', () => this.updateSplitMode());
@@ -191,6 +311,7 @@ SS.groupPage = {
             if (e.target.matches('input[name="participant"]'))
                 this.updateSplitMode();
         });
+        document.getElementById('isRecurring')?.addEventListener('change', () => this.updateRecurringFields());
         const inf = document.getElementById('inviteForm');
         if (inf)
             inf.addEventListener('submit', async (e) => {
@@ -232,17 +353,30 @@ SS.groupPage = {
         const activeMembers = SS.groups.activeMembers(group);
         document.getElementById('paidBy').innerHTML = activeMembers.map(x => `<option value="${SS.escape(x.userId)}">${SS.escape(x.name)}${x.userId === SS.currentUser()?.id ? ' (You)' : ''}</option>`).join('');
         document.getElementById('participants').innerHTML = activeMembers.map(x => `<label class="check participant-check"><input type="checkbox" name="participant" value="${SS.escape(x.userId)}" checked><span class="participant-name">${SS.escape(x.name)}${x.userId === SS.currentUser()?.id ? ' (You)' : ''}</span></label>`).join('');
+        document.getElementById('recurringControl')?.classList.toggle('hide', group.purpose !== 'household');
         if (expense) {
             document.getElementById('expenseDescription').value = expense.description || '';
             document.getElementById('expenseAmount').value = Number(expense.amount).toFixed(2);
             document.getElementById('paidBy').value = expense.paidBy || '';
             document.getElementById('splitMode').value = expense.splitMode === 'manual' ? 'manual' : 'equal';
+            document.getElementById('expenseCategory').value = SS.expenseCategories.some(item => item.value === expense.category) ? expense.category : 'Other';
+            document.getElementById('expenseNote').value = expense.note || '';
+            const recurring = document.getElementById('isRecurring');
+            if (recurring) recurring.checked = Boolean(expense.isRecurring);
+            document.getElementById('recurringFrequency').value = expense.frequency || 'monthly';
+            document.getElementById('recurringStartDate').value = expense.startDate || '';
+            document.getElementById('recurringNextDueDate').value = expense.nextDueDate || '';
+            document.getElementById('recurringEndDate').value = expense.endDate || '';
             const participantSet = new Set(Array.isArray(expense.participants) ? expense.participants : []);
             document.querySelectorAll('input[name="participant"]').forEach(input => { input.checked = participantSet.has(input.value); });
         }
         else {
             document.getElementById('splitMode').value = 'equal';
+            document.getElementById('expenseCategory').value = 'Other';
+            document.getElementById('isRecurring').checked = false;
+            document.getElementById('recurringFrequency').value = 'monthly';
         }
+        this.updateRecurringFields();
         this.updateSplitMode();
         modal.classList.add('open');
     },
@@ -270,6 +404,71 @@ SS.groupPage = {
         }).join('');
         if (hint)
             hint.textContent = amount ? `Enter amounts that add up exactly to ${SS.money(amount)}.` : 'Enter each person\'s share after entering the total expense.';
+    },
+    updateRecurringFields() {
+        const toggle = document.getElementById('isRecurring');
+        const panel = document.getElementById('recurringFields');
+        if (!toggle || !panel) return;
+        panel.classList.toggle('hide', !toggle.checked);
+    },
+    duplicateExpense(group, expense) {
+        if (!expense) return;
+        const draft = { ...SS.expenses.normalize(expense), id: null, isRecurring: false, frequency: '', startDate: '', nextDueDate: '', endDate: '' };
+        this.openExpense(group, draft);
+        this.editingExpenseId = null;
+        const title = document.querySelector('#expenseModal .modal-head h2');
+        const submit = document.querySelector('#expenseForm button[type="submit"]');
+        if (title) title.textContent = 'Duplicate expense';
+        if (submit) submit.textContent = 'Create Duplicate';
+    },
+    bindExpenseFilters(id) {
+        const root = document.getElementById('expenseToolbar');
+        if (!root) return;
+        const apply = () => {
+            this.expenseFilters = {
+                search: document.getElementById('expenseSearch')?.value || '',
+                category: document.getElementById('expenseCategoryFilter')?.value || 'all',
+                payer: document.getElementById('expensePayerFilter')?.value || 'all',
+                dateFrom: document.getElementById('expenseDateFrom')?.value || '',
+                dateTo: document.getElementById('expenseDateTo')?.value || '',
+                minAmount: document.getElementById('expenseMin')?.value || '',
+                maxAmount: document.getElementById('expenseMax')?.value || '',
+                sort: document.getElementById('expenseSort')?.value || 'newest'
+            };
+            const group = SS.group(id);
+            SS.render.expenses(group, document.getElementById('expenses'), {
+                filters: this.expenseFilters,
+                onEdit: expenseId => this.openExpense(SS.group(id), SS.group(id)?.expenses.find(item => item.id === expenseId) || null),
+                onDuplicate: expenseId => this.duplicateExpense(SS.group(id), SS.group(id)?.expenses.find(item => item.id === expenseId) || null),
+                onDelete: expenseId => this.deleteExpenseRemote(id, expenseId),
+                onUndo: expense => this.restoreExpenseRemote(id, expense),
+                onChanged: () => this.render(id)
+            });
+        };
+        root.querySelectorAll('input,select').forEach(control => control.addEventListener('input', apply));
+        root.querySelectorAll('select').forEach(control => control.addEventListener('change', apply));
+        document.getElementById('clearExpenseFilters')?.addEventListener('click', () => {
+            this.expenseFilters = { search: '', category: 'all', payer: 'all', dateFrom: '', dateTo: '', minAmount: '', maxAmount: '', sort: 'newest' };
+            this.render(id);
+            SS.notifications.info('Filters cleared');
+        });
+    },
+    renderRecurring(group, id) {
+        const host = document.getElementById('recurringDue');
+        if (!host) return;
+        const due = SS.recurring.due(group);
+        if (!due.length) {
+            host.innerHTML = '<div class="empty-state compact"><div class="empty-icon">↻</div><h3>No recurring expenses due</h3><p>Due Household expenses will appear here for manual generation.</p></div>';
+            return;
+        }
+        host.innerHTML = `<div class="recurring-list">${due.map(expense => `<div class="recurring-row"><div><strong>${SS.escape(expense.description)}</strong><p>${SS.escape(expense.frequency)} · Due ${SS.escape(SS.formatDate(expense.nextDueDate))} · ${SS.money(expense.amount)}</p></div><button class="btn btn-primary btn-sm generate-recurring" data-id="${SS.escape(expense.id)}">Generate Expense</button></div>`).join('')}</div>`;
+        host.querySelectorAll('.generate-recurring').forEach(button => button.addEventListener('click', () => {
+            try {
+                SS.recurring.generate(id, button.dataset.id);
+                SS.notifications.success('Recurring expense generated');
+                this.render(id);
+            } catch (error) { SS.notifications.error(error.message); }
+        }));
     },
     openInvite() {
         const group = SS.group(SS.query('id'));
