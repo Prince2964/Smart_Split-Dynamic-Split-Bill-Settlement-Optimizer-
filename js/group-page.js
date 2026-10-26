@@ -216,18 +216,25 @@ SS.groupPage = {
         await SS.expenses.restoreRemote(groupId, expense);
         await this.loadRemoteGroup(groupId);
     },
-    deleteGroup(group) {
-        if (group.creator !== SS.currentUser()?.id)
+    async deleteGroup(group) {
+        const user = SS.currentUser();
+        if (!user || String(group.creator) !== String(user.id))
             return SS.toast('Only the group admin can delete this group.');
-        if (!confirm(`Delete "${group.name}"? This will remove the group and its invitations.`))
+        if (!confirm(`Delete "${group.name}" and all its expenses and invitations? This cannot be undone.`))
             return;
+        const button = document.getElementById('deleteGroup');
+        if (button) { button.disabled = true; button.textContent = 'Deleting…'; }
         try {
-            SS.groups.delete(group.id);
-            SS.toast('Group deleted.');
+            // Use the backend delete endpoint so MongoDB and related records are deleted too.
+            await SS.api.request(`/groups/${encodeURIComponent(group.id)}`, { method: 'DELETE' });
+            SS.storage.replaceGroups(SS.storage.groups().filter(item => String(item.id) !== String(group.id)));
+            SS.storage.replaceInvitations(SS.storage.invitations().filter(item => String(item.groupId) !== String(group.id)));
+            SS.toast('Group deleted successfully.');
             setTimeout(() => location.href = 'my-groups.html', 350);
         }
         catch (e) {
-            SS.toast(e.message);
+            if (button) { button.disabled = false; button.textContent = '⌫ Delete Group'; }
+            SS.toast(e.message || 'Could not delete group. Please try again.');
         }
     },
     removeMember(group, userId) {
@@ -312,26 +319,16 @@ SS.groupPage = {
                 this.updateSplitMode();
         });
         document.getElementById('isRecurring')?.addEventListener('change', () => this.updateRecurringFields());
-        const inf = document.getElementById('inviteForm');
-        if (inf)
-            inf.addEventListener('submit', async (e) => {
-                e.preventDefault();
+        const createInviteButton = document.getElementById('createInviteLinkBtn');
+        createInviteButton?.addEventListener('click', () => {
+            const group = SS.group(SS.query('id'));
+            if (!group || group.creator !== SS.currentUser()?.id) {
                 const error = document.getElementById('inviteError');
-                error.textContent = '';
-                try {
-                    const group = SS.group(SS.query('id'));
-                    if (!group || group.creator !== SS.currentUser()?.id)
-                        throw new Error('Only the group admin can send invitations.');
-                    const invitation = SS.invitations.create(group.id, document.getElementById('inviteName').value, document.getElementById('inviteEmail').value);
-                    await SS.invitations.send(invitation);
-                    document.getElementById('inviteResults').innerHTML = `<div class="invite-generated"><span class="status-pill pending">Pending</span><strong>${SS.escape(invitation.name)}</strong><p>Invitation created for <b>${SS.escape(invitation.email)}</b>.</p><div class="demo-token">${SS.escape(invitation.token)}</div><small>Demo invitation · Expires ${SS.escape(SS.formatDate(invitation.expiresAt))}. The recipient must log in with this email in this browser.</small></div>`;
-                    inf.reset();
-                    SS.toast('Demo invitation created.');
-                }
-                catch (x) {
-                    error.textContent = x.message;
-                }
-            });
+                if (error) error.textContent = 'Only the group admin can create an invitation link.';
+                return;
+            }
+            this.createReusableInviteLink(group.id);
+        });
     },
     openExpense(group, expense = null) {
         if (!group || !SS.groups.member(group, SS.currentUser()?.id))
@@ -470,14 +467,76 @@ SS.groupPage = {
             } catch (error) { SS.notifications.error(error.message); }
         }));
     },
+    async createReusableInviteLink(groupId) {
+        const button = document.getElementById('createInviteLinkBtn');
+        const result = document.getElementById('inviteResults');
+        const error = document.getElementById('inviteError');
+        if (!result) return;
+        if (error) error.textContent = '';
+
+        try {
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Creating secure link...';
+            }
+
+            const response = await SS.api.request(
+                `/groups/${encodeURIComponent(groupId)}/invitations/link`,
+                { method: 'POST', body: JSON.stringify({}) }
+            );
+            const inviteUrl = response.invitation?.inviteUrl;
+            if (!inviteUrl) throw new Error('The server did not return an invitation link.');
+
+            const group = SS.group(groupId);
+            const shareText = `You're invited to join ${group?.name || 'our group'} on SplitSmart. Open this link to sign in or create an account and join: ${inviteUrl}`;
+            result.innerHTML = `
+                <div class="invite-generated">
+                    <span class="status-pill pending">Link ready</span>
+                    <h3>WhatsApp invitation link created</h3>
+                    <p>This link expires in 7 days. Anyone with the link can join by signing in or creating an account. Share it only with people you trust.</p>
+                    <input id="reusableInviteUrl" type="text" readonly value="${SS.escape(inviteUrl)}" style="width:100%;margin:8px 0;">
+                    <div class="form-actions" style="display:flex;gap:8px;flex-wrap:wrap">
+                      <button type="button" class="btn btn-primary" id="shareReusableInviteWhatsApp">Share on WhatsApp</button>
+                      <button type="button" class="btn btn-soft" id="copyReusableInviteLink">Copy invitation link</button>
+                    </div>
+                    <p id="reusableCopyMessage" aria-live="polite"></p>
+                </div>`;
+
+            document.getElementById('shareReusableInviteWhatsApp')?.addEventListener('click', () => {
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+                window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            });
+
+            document.getElementById('copyReusableInviteLink')?.addEventListener('click', async () => {
+                const input = document.getElementById('reusableInviteUrl');
+                const message = document.getElementById('reusableCopyMessage');
+                try {
+                    await navigator.clipboard.writeText(inviteUrl);
+                    if (message) message.textContent = 'Link copied! You can paste it into WhatsApp or any chat.';
+                } catch {
+                    input?.focus();
+                    input?.select();
+                    if (message) message.textContent = 'Select and copy the link manually.';
+                }
+            });
+        } catch (err) {
+            if (error) error.textContent = err.message || 'Could not create invitation link.';
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = 'Create WhatsApp Invite Link';
+            }
+        }
+    },
     openInvite() {
         const group = SS.group(SS.query('id'));
         if (!group || group.creator !== SS.currentUser()?.id)
             return SS.toast('Only the group admin can send invitations.');
-        document.getElementById('inviteForm')?.reset();
-        document.getElementById('inviteError').textContent = '';
-        document.getElementById('inviteResults').innerHTML = '';
-        document.getElementById('inviteModal').classList.add('open');
+        const error = document.getElementById('inviteError');
+        const results = document.getElementById('inviteResults');
+        if (error) error.textContent = '';
+        if (results) results.innerHTML = '';
+        document.getElementById('inviteModal')?.classList.add('open');
     }
 };
 

@@ -38,6 +38,11 @@ SS.storage = {
         const value = this.load(SS.STORAGE.invitations, []);
         return Array.isArray(value) ? value : [];
     },
+    settlementHistory() {
+        const value = this.load(SS.STORAGE.settlementHistory, []);
+        return Array.isArray(value) ? value : [];
+    },
+    replaceSettlementHistory(value) { this.save(SS.STORAGE.settlementHistory, Array.isArray(value) ? value : []); },
     currentUserId() {
         try {
             return localStorage.getItem(SS.STORAGE.currentUser);

@@ -23,9 +23,27 @@ SS.myGroupsPage = {
         try {
             const response = await SS.api.request("/groups");
 
-            const groups = (response.groups || []).map(
-                group => SS.groups.fromApi(group)
-            );
+            // The groups endpoint returns group metadata, while expenses are
+            // stored separately in GroupExpense. Load each group's expenses
+            // before rendering the cards so count and total are accurate.
+            const groups = await Promise.all((response.groups || []).map(async apiGroup => {
+                const group = SS.groups.fromApi(apiGroup);
+
+                try {
+                    const expenseResponse = await SS.api.request(
+                        `/group-expenses/${encodeURIComponent(group.id)}`
+                    );
+                    group.expenses = (expenseResponse.expenses || []).map(
+                        expense => SS.expenses.fromApi(expense)
+                    );
+                } catch (expenseError) {
+                    console.error(`Could not load expenses for group ${group.id}:`, expenseError);
+                    // Do not silently present a false zero if expense loading failed.
+                    throw new Error(`Could not load expenses for "${group.name}": ${expenseError.message}`);
+                }
+
+                return group;
+            }));
 
             SS.storage.replaceGroups(groups);
             this.render();

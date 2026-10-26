@@ -61,3 +61,46 @@
     border-radius:16px;
     display:block
 }
+
+.group-filter-bar { display: grid; grid-template-columns: minmax(180px, 1.6fr) repeat(2, minmax(130px, 1fr)) auto; gap: 10px; margin-bottom: 12px; }
+.group-filter-bar input, .group-filter-bar select { height: 42px; min-width: 0; border: 1px solid var(--line); border-radius: 11px; padding: 0 11px; background: #fff; }
+@media (max-width: 1024px) {
+    .group-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+}
+
+@media (max-width: 760px) {
+    .group-filter-bar { grid-template-columns: 1fr 1fr; }
+    .page-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+@media (max-width: 600px) {
+    .group-grid { grid-template-columns: 1fr; gap: 12px; }
+    .group-filter-bar { grid-template-columns: 1fr; }
+    .compact-group-card { grid-template-columns: 80px 1fr; }
+}
+
+
+/* My Groups: card-first directory with responsive filters */
+.group-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; align-items:stretch; }
+.group-filter-bar { grid-template-columns:minmax(220px,1fr) minmax(130px,.55fr) minmax(150px,.65fr) auto; gap:9px; }
+.group-filter-bar input, .group-filter-bar select { border-color:#e2e9ed; border-radius:11px; background:#fff; }
+.page-toolbar { flex-direction:row; padding:12px 15px; margin-bottom:14px; background:transparent; border:0; border-radius:0; border-bottom:1px solid var(--line); }
+.group-thumb-wrap { height:132px; }
+.compact-group-card { grid-template-columns:1fr; }
+.compact-group-card .group-thumb-wrap { height:132px; min-height:0; }
+.compact-group-card .group-card-content { padding:15px; }
+@media (max-width:1024px) { .group-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:760px) {
+  .group-filter-bar { grid-template-columns:1fr 1fr; }
+  .group-filter-bar input { grid-column:1 / -1; }
+  .page-toolbar { flex-direction:row; align-items:center; gap:8px; padding:10px 0; }
+}
+@media (max-width:600px) {
+  .group-grid { grid-template-columns:1fr; gap:11px; }
+  .group-filter-bar { grid-template-columns:1fr 1fr; }
+  .group-filter-bar input { grid-column:1 / -1; }
+  .group-filter-bar button { grid-column:1 / -1; width:100%; }
+  .compact-group-card { grid-template-columns:82px minmax(0,1fr); }
+  .compact-group-card .group-thumb-wrap { height:100%; min-height:130px; }
+  .compact-group-card .group-card-content { padding:12px; }
+}

@@ -8,6 +8,7 @@
   </title>
   <link href="css/common.css" rel="stylesheet"/>
   <link href="css/group.css" rel="stylesheet"/>
+  <link href="css/budget.css" rel="stylesheet"/>
  </head>
  <body data-page="group">
   <header id="siteNav">
@@ -73,6 +74,9 @@
         </option>
         <option value="Hotel / Stay">
          🏨 Hotel / Stay
+        </option>
+        <option value="Activities">
+         🎯 Activities
         </option>
         <option value="Shopping">
          🛍️ Shopping
@@ -228,29 +232,10 @@
      </button>
     </div>
     <p class="muted">
-     Enter the exact email the person will use to create or log into their local SplitSmart account.
+     Create a secure group invite link and share it on WhatsApp. No email address is needed.
     </p>
-    <form class="form-grid" id="inviteForm">
-     <div class="form-row">
-      <div class="field">
-       <label>
-        Name
-       </label>
-       <input id="inviteName" placeholder="Mayank" required=""/>
-      </div>
-      <div class="field">
-       <label>
-        Email
-       </label>
-       <input id="inviteEmail" placeholder="mayank@example.com" required="" type="email"/>
-      </div>
-     </div>
-     <div class="form-error" id="inviteError">
-     </div>
-     <button class="btn btn-primary" type="submit">
-      Create Demo Invitation
-     </button>
-    </form>
+    <div class="form-error" id="inviteError" aria-live="polite"></div>
+    <button class="btn btn-primary" type="button" id="createInviteLinkBtn">Create WhatsApp Invite Link</button>
     <div id="inviteResults">
     </div>
    </div>
@@ -264,6 +249,8 @@
   <script src="js/utils.js">
   </script>
   <script src="js/auth.js">
+  </script>
+  <script src="js/budget.js">
   </script>
   <script src="js/groups.js">
   </script>

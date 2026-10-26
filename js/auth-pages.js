@@ -1,67 +1,108 @@
+
 SS.authPages = {
     init() {
-        if (!SS.requireGuest())
-            return;
-        const signup = document.getElementById('signupForm');
+        if (!SS.requireGuest()) return;
+
+        const signup = document.getElementById("signupForm");
+
         if (signup) {
-            signup.addEventListener('submit', e => {
-                e.preventDefault();
-                const d = Object.fromEntries(new FormData(signup));
-                const err = document.getElementById('formError');
-                err.textContent = '';
-                if (d.name.trim().length < 2)
-                    return err.textContent = 'Please enter your full name.';
-                if (!/^\S+@\S+\.\S+$/.test(d.email))
-                    return err.textContent = 'Enter a valid email address.';
-                if (d.password.length < 6)
-                    return err.textContent = 'Password must be at least 6 characters.';
-                if (d.password !== d.confirmPassword)
-                    return err.textContent = 'Passwords do not match.';
+            signup.addEventListener("submit", async event => {
+                event.preventDefault();
+
+                const data = Object.fromEntries(
+                    new FormData(signup)
+                );
+
+                const errorBox = document.getElementById("formError");
+                errorBox.textContent = "";
+
+                if (data.name.trim().length < 2) {
+                    errorBox.textContent =
+                        "Please enter your full name.";
+                    return;
+                }
+
+                if (data.password.length < 8) {
+                    errorBox.textContent =
+                        "Password must be at least 8 characters.";
+                    return;
+                }
+
+                if (data.password !== data.confirmPassword) {
+                    errorBox.textContent =
+                        "Passwords do not match.";
+                    return;
+                }
+
+                const button = signup.querySelector(
+                    'button[type="submit"]'
+                );
+                button.disabled = true;
+
                 try {
-                    const user = SS.auth.register(d);
-                    const next = SS.query('next');
+                    const user = await SS.auth.register(data);
+
+                    const next = SS.query("next");
                     const loginUrl = next
                         ? `login.html?next=${encodeURIComponent(next)}`
-                        : 'login.html';
-                    // Replace the form with a clear success state before moving to Login.
-                    const panel = signup.closest('.auth-content') || signup.parentElement;
+                        : "login.html";
+
+                    const panel = signup.closest(".auth-content")
+                        || signup.parentElement;
+
                     panel.innerHTML = `
-            <div class="account-success">
-              <div class="success-check">✓</div>
-              <span class="eyebrow">Account created</span>
-              <h2>You're all set, ${SS.escape(user.name.split(' ')[0])}.</h2>
-              <p class="muted">Your SplitSmart account was created successfully. Taking you to Login so you can continue.</p>
-              <div class="success-progress"><span></span></div>
-              <a class="btn btn-primary" href="${loginUrl}">Continue to Login →</a>
-            </div>`;
-                    // Short pause lets the user actually see the confirmation.
-                    setTimeout(() => { location.href = loginUrl; }, 1400);
-                }
-                catch (x) {
-                    err.textContent = x.message;
+                        <div class="account-success">
+                            <div class="success-check">✓</div>
+                            <span class="eyebrow">Account created</span>
+                            <h2>You're all set, ${
+                                SS.escape(user.name.split(" ")[0])
+                            }.</h2>
+                            <p class="muted">
+                                Your account was saved successfully.
+                                Continue to log in.
+                            </p>
+                            <a class="btn btn-primary" href="${loginUrl}">
+                                Continue to Login →
+                            </a>
+                        </div>`;
+                } catch (error) {
+                    errorBox.textContent = error.message;
+                    button.disabled = false;
                 }
             });
         }
-        const login = document.getElementById('loginForm');
+
+        const login = document.getElementById("loginForm");
+
         if (login) {
-            login.addEventListener('submit', e => {
-                e.preventDefault();
-                const d = Object.fromEntries(new FormData(login));
-                const err = document.getElementById('formError');
-                err.textContent = '';
+            login.addEventListener("submit", async event => {
+                event.preventDefault();
+
+                const data = Object.fromEntries(
+                    new FormData(login)
+                );
+
+                const errorBox = document.getElementById("formError");
+                errorBox.textContent = "";
+
+                const button = login.querySelector(
+                    'button[type="submit"]'
+                );
+                button.disabled = true;
+
                 try {
-                    SS.auth.login(d.email, d.password);
-                    // Return the user to the page they originally wanted.
-                    // Example: Start a Trip → Signup → Login → Create Group.
-                    const next = SS.query('next');
-                    const destination = next || 'dashboard.html';
-                    location.href = destination;
-                }
-                catch (x) {
-                    err.textContent = x.message;
+                    await SS.auth.login(
+                        data.email,
+                        data.password
+                    );
+
+                    const next = SS.query("next");
+                    location.href = next || "dashboard.html";
+                } catch (error) {
+                    errorBox.textContent = error.message;
+                    button.disabled = false;
                 }
             });
         }
     }
 };
-

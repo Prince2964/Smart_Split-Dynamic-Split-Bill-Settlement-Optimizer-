@@ -17,7 +17,7 @@ SS.render = {
           <div class="group-card-top"><span class="purpose-badge ${SS.escape(g.purpose)}">${SS.icon(g.purpose)} ${SS.escape(SS.label(g.purpose))}</span><span class="group-created">${SS.formatDate(g.createdAt)}</span></div>
           <h3>${SS.escape(g.name)}</h3>
           <p>${g.purpose === 'trip' && g.meta?.destination ? SS.escape(g.meta.destination) + ' · ' : ''}${members.length} members · ${expenses.length} expenses</p>
-          <div class="group-card-bottom"><strong>${SS.money(total)}</strong><a class="text-btn" href="group.html?id=${encodeURIComponent(g.id)}">Open group →</a></div>
+          <div class="group-card-bottom"><strong>${SS.money(total)}</strong><div class="group-card-actions"><a class="text-btn" href="group.html?id=${encodeURIComponent(g.id)}">Open group →</a></div></div>
         </div>
       </article>`;
         }).join('');
@@ -142,9 +142,10 @@ SS.render = {
                 : `<button class="btn btn-soft btn-sm mark-settlement-paid" data-from="${SS.escape(s.fromId)}" data-to="${SS.escape(s.toId)}" data-amount="${SS.escape(s.amount)}">Mark Paid</button>`;
             return `<div class="settlement-row"><div class="settlement-flow"><strong>${SS.escape(s.from)}</strong><span>→</span><strong>${SS.escape(s.to)}</strong></div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end"><strong>${SS.money(s.amount)}</strong>${action}</div></div>`;
         }).join('');
-        host.querySelectorAll('.mark-settlement-paid').forEach(button => button.addEventListener('click', () => {
+        host.querySelectorAll('.mark-settlement-paid').forEach(button => button.addEventListener('click', async () => {
+            button.disabled = true;
             try {
-                SS.calculations.markSettlementPaid(group.id, {
+                await SS.calculations.markSettlementPaid(group.id, {
                     fromId: button.dataset.from,
                     toId: button.dataset.to,
                     amount: Number(button.dataset.amount)
@@ -153,7 +154,8 @@ SS.render = {
                 SS.toast('Settlement marked as paid.');
             }
             catch (e) {
-                SS.toast(e.message);
+                SS.toast(e.message || 'Could not save settlement status.');
+                button.disabled = false;
             }
         }));
     }
