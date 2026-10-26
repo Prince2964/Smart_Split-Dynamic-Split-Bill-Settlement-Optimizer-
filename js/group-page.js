@@ -319,6 +319,18 @@ SS.groupPage = {
                 this.updateSplitMode();
         });
         document.getElementById('isRecurring')?.addEventListener('change', () => this.updateRecurringFields());
+        const emailInviteForm = document.getElementById('emailInviteForm');
+        emailInviteForm?.addEventListener('submit', event => {
+            event.preventDefault();
+            const group = SS.group(SS.query('id'));
+            if (!group || group.creator !== SS.currentUser()?.id) {
+                const error = document.getElementById('inviteError');
+                if (error) error.textContent = 'Only the group admin can send invitations.';
+                return;
+            }
+            this.sendEmailInvitation(group.id);
+        });
+
         const createInviteButton = document.getElementById('createInviteLinkBtn');
         createInviteButton?.addEventListener('click', () => {
             const group = SS.group(SS.query('id'));
@@ -467,6 +479,48 @@ SS.groupPage = {
             } catch (error) { SS.notifications.error(error.message); }
         }));
     },
+    async sendEmailInvitation(groupId) {
+        const form = document.getElementById('emailInviteForm');
+        const input = document.getElementById('inviteEmail');
+        const button = document.getElementById('sendEmailInviteBtn');
+        const error = document.getElementById('inviteError');
+        const results = document.getElementById('inviteResults');
+        const email = String(input?.value || '').trim().toLowerCase();
+        if (error) error.textContent = '';
+        if (results) results.innerHTML = '';
+        if (!email || !input?.checkValidity()) {
+            if (error) error.textContent = 'Please enter a valid email address.';
+            input?.focus();
+            return;
+        }
+
+        try {
+            if (button) {
+                button.disabled = true;
+                button.textContent = 'Sending...';
+            }
+            const response = await SS.api.request(
+                `/groups/${encodeURIComponent(groupId)}/invitations/email`,
+                { method: 'POST', body: JSON.stringify({ email }) }
+            );
+            if (results) {
+                const recipient = SS.escape(response.invitation?.email || email);
+                const expires = response.invitation?.expiresAt
+                    ? new Date(response.invitation.expiresAt).toLocaleString()
+                    : 'in 7 days';
+                results.innerHTML = `<div class="invite-generated"><span class="status-pill pending">Email sent</span><p>Invitation sent to <strong>${recipient}</strong>.</p><p class="muted">This invitation expires on ${SS.escape(expires)}.</p></div>`;
+            }
+            form?.reset();
+        } catch (err) {
+            if (error) error.textContent = err.message || 'Could not send invitation email.';
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = 'Send Invitation';
+            }
+        }
+    },
+
     async createReusableInviteLink(groupId) {
         const button = document.getElementById('createInviteLinkBtn');
         const result = document.getElementById('inviteResults');

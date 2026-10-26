@@ -21,6 +21,8 @@ SS.APP = Object.freeze({
 // Local development default. After deploying the backend, replace this with your Render URL.
 // Example: 'https://your-splitsmart-api.onrender.com/api'
 SS.API_BASE_URL = 'https://smart-split-dynamic-split-bill.onrender.com/api';
+// SS.API_BASE_URL = 'http://localhost:3000/api';
+
 
 // Shared API helper
 SS.api = {
