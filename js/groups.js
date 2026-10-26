@@ -40,7 +40,11 @@ SS.groups = {
             thumbnail: apiGroup.thumbnail || "",
             members,
             expenses: [],
-            settlementStatuses: {},
+            settlementStatuses: apiGroup.settlementStatuses
+                ? (typeof apiGroup.settlementStatuses.toJSON === "function"
+                    ? apiGroup.settlementStatuses.toJSON()
+                    : apiGroup.settlementStatuses)
+                : {},
             budget: {
                 total: Number(apiGroup.budget?.total) || 0,
                 categories: {
