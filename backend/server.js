@@ -6,13 +6,31 @@ const connectDB = require("./config/db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const allowedOrigins = new Set([
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1:5501",
+    "http://localhost:5501",
+    "https://smart-split-beryl.vercel.app",
+    process.env.FRONTEND_URL
+].filter(Boolean));
+
+// FRONTEND_URL should be the deployed Vercel URL (or local frontend URL).
+if (process.env.FRONTEND_URL) {
+    try {
+        allowedOrigins.add(new URL(process.env.FRONTEND_URL).origin);
+    } catch {
+        console.warn("FRONTEND_URL is not a valid URL; check Render environment variables.");
+    }
+}
+
 app.use(cors({
-    origin: [
-        "http://127.0.0.1:5500",
-        "http://localhost:5500",
-        "http://127.0.0.1:5501",
-        "http://localhost:5501"
-    ]
+    origin(origin, callback) {
+        // Allow server-to-server tools and local requests without an Origin header.
+        if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+        return callback(new Error("Origin is not allowed by CORS"));
+    }
 }));
 
 app.use(express.json({ limit: "1mb" }));
@@ -71,7 +89,7 @@ const startServer = async () => {
 
         app.listen(PORT, () => {
             console.log(
-                `Server is running on http://localhost:${PORT}`
+                `SplitSmart backend listening on port ${PORT}`
             );
         });
     } catch (error) {
