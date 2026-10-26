@@ -93,6 +93,37 @@ const groupSchema = new mongoose.Schema(
             ref: "User"
         }],
 
+        settlementStatuses: {
+            type: Map,
+            of: new mongoose.Schema({
+                status: {
+                    type: String,
+                    enum: ["pending", "paid"],
+                    default: "pending"
+                },
+                paidAt: {
+                    type: Date,
+                    default: null
+                },
+                markedBy: {
+                    type: String,
+                    default: ""
+                },
+                fromId: {
+                    type: String,
+                    default: ""
+                },
+                toId: {
+                    type: String,
+                    default: ""
+                },
+                amount: {
+                    type: Number,
+                    default: 0
+                }
+            }, { _id: false }),
+            default: () => new Map()
+        },
         invitations: [invitationSchema]
     },
     { timestamps: true }
