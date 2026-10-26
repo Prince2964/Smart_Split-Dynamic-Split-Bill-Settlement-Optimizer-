@@ -232,12 +232,21 @@
      </button>
     </div>
     <p class="muted">
-     Create a secure group invite link and share it on WhatsApp. No email address is needed.
+     Send a private invitation by email, or create a shareable link for WhatsApp.
+     Email invitations are tied to the recipient's email and expire in 7 days.
     </p>
+    <form id="emailInviteForm" class="invite-email-form">
+     <label for="inviteEmail">Recipient email address</label>
+     <div class="form-row" style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="inviteEmail" name="email" type="email" autocomplete="email" placeholder="friend@example.com" required style="flex:1;min-width:220px" />
+      <button class="btn btn-primary" type="submit" id="sendEmailInviteBtn">Send Invitation</button>
+     </div>
+    </form>
     <div class="form-error" id="inviteError" aria-live="polite"></div>
-    <button class="btn btn-primary" type="button" id="createInviteLinkBtn">Create WhatsApp Invite Link</button>
-    <div id="inviteResults">
-    </div>
+    <div id="inviteResults" aria-live="polite"></div>
+    <hr style="margin:18px 0;border:0;border-top:1px solid var(--border,#e5e7eb)" />
+    <p class="muted">Or create a reusable link that anyone with the link can use.</p>
+    <button class="btn btn-soft" type="button" id="createInviteLinkBtn">Create WhatsApp Invite Link</button>
    </div>
   </div>
   <div class="toast" id="toast">
