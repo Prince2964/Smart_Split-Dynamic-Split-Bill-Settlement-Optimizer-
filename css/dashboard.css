@@ -142,7 +142,7 @@
 
 
 /* Dashboard composition inspired by the supplied desktop reference */
-.stats-grid { display:none; }
+.stats-grid { display: grid; }
 .app-page:has(#financialSummary) .page-header { margin-bottom:18px; }
 .financial-overview { margin-bottom:18px; }
 .financial-overview .section-title { display:none; }
