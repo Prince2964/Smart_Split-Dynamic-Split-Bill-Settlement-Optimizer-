@@ -1,198 +1,215 @@
-# SplitSmart Phase 1.7 — Budget System
+# SplitSmart
 
-A client-side **Budget System** extension for SplitSmart Phase 1.7 built using only HTML5, Vanilla CSS, and JavaScript (ES6+). This module introduces overall spending targets and category-wise spending caps without altering backend requirements, databases, or breaking existing authentication, recurring expenses, and settlement algorithms.
+SplitSmart is a group expense-splitting and budget-tracking web
+application. It helps users manage groups, record expenses, monitor
+budgets, and review settlements.
 
----
+> **Note:** Confirm the exact endpoint paths and environment variable
+> names against the final route files before submitting this README. The
+> route prefixes below come from the current `server.js` setup.
 
-## 1. Modified & New Files
+## Features
 
-| File | Status | Description |
-|---|---|---|
-| `js/budget.js` | **New** | Dedicated module (`SS.budget`) containing budget calculations, data sanitization, category aggregation, threshold alert state management, and summary UI rendering. |
-| `css/budget.css` | **New** | Premium, responsive styles for the budget form controls, metrics grid, dynamic multi-tier progress bars, category budget cards, inline alert banners, and budget modal. |
-| `create-group.html` | **Modified** | Integrated `css/budget.css`, added optional budget input fields (Estimated Total Budget and category budgets for Travel, Hotel / Stay, Food, and Activities), and loaded `js/budget.js`. |
-| `js/create-group.js` | **Modified** | Form submit handler parses budget inputs via `SS.budget.parseBudgetFormData(d)` and attaches the structured budget object before group persistence. |
-| `group.html` | **Modified** | Linked `css/budget.css`, added the `Activities` category option to the expense modal category selector, and loaded `js/budget.js`. |
-| `js/group-page.js` | **Modified** | Integrated `#groupBudgetRoot` container into the group page layout, mounted `SS.budget.renderSummary(group, host, onUpdate)`, and hooked `SS.budget.checkAlerts(group)`. |
-| `js/groups.js` | **Modified** | Initialized the `budget` property in `SS.groups.create()` with backward-compatible defaults. |
-| `js/utils.js` | **Modified** | Added `Activities` (`🎯`) to `SS.expenseCategories` so activities expenses can be logged and tracked natively. |
+-   User authentication (signup/login).
+-   Create and manage groups.
+-   Invite members by email using the Resend API and share invitations
+    through WhatsApp using an invitation token.
+-   Add and manage expenses.
+-   Monitor budgets, including a warning when spending reaches 80% of
+    the overall budget and an overspending alert when the budget is
+    exceeded.
+-   Review settlement details and settlement history.
+-   View dashboard statistics, including total groups and total
+    spending.
+-   Store application data in MongoDB.
 
-*Note: The original source folder (`SplitSmart-Phase1.7`) remains untouched. All work is housed in `SplitSmart-Phase1.7-budget-system`.*
+**Current limitation:** Settlement payment verification is not
+implemented yet and is planned as a future improvement.
 
----
+## Technology Stack
 
-## 2. Budget Object Structure in `localStorage`
+-   **Frontend:** HTML, CSS, JavaScript
+-   **Backend:** Node.js, Express.js
+-   **Database:** MongoDB Atlas with Mongoose
+-   **Email invitations:** Resend API
+-   **API testing:** Postman
+-   **Frontend deployment:** Vercel
+-   **Backend deployment:** Render
 
-The budget data is persisted directly inside each group object under the `ss_groups` key in browser `localStorage`.
+## Backend Project Structure
 
-### Data Schema
-```json
-{
-  "id": "GRP-12345678",
-  "name": "Goa Trip 2026",
-  "purpose": "trip",
-  "creator": "USR-87654321",
-  "creatorName": "Priya Sharma",
-  "createdAt": "2026-10-23T11:00:00.000Z",
-  "thumbnail": "",
-  "members": [
-    {
-      "userId": "USR-87654321",
-      "name": "Priya Sharma",
-      "email": "priya@example.com",
-      "status": "accepted",
-      "joinedAt": "2026-10-23T11:00:00.000Z"
-    }
-  ],
-  "expenses": [],
-  "settlementStatuses": {},
-  "budget": {
-    "total": 50000,
-    "categories": {
-      "Travel": 15000,
-      "Hotel / Stay": 15000,
-      "Food": 12000,
-      "Activities": 8000
-    }
-  },
-  "meta": {
-    "destination": "Goa",
-    "startDate": "2026-11-01",
-    "endDate": "2026-11-07",
-    "address": "",
-    "description": "Annual beach vacation with friends",
-    "customPurpose": ""
-  }
-}
+``` text
+backend/
+├── config/
+│   └── db.js
+├── routes/
+│   ├── healthRoutes.js
+│   ├── authRoutes.js
+│   ├── expenseRoutes.js
+│   ├── groupRoutes.js
+│   └── groupExpenseRoutes.js
+├── .env                 # Create locally; do not commit
+├── server.js
+└── package.json
 ```
 
-### Backward Compatibility & Defaults
-- **Legacy Groups**: Existing groups without a `budget` key evaluate safely via `SS.budget.get(group)` to:
-  ```json
-  {
-    "total": 0,
-    "categories": { "Travel": 0, "Hotel / Stay": 0, "Food": 0, "Activities": 0 },
-    "isSet": false
-  }
-  ```
-- **Missing or Zero Values**: Handled as `0` or *"Not set"*. No NaN values or runtime exceptions occur if a user omits the total budget or category values.
-- **Admin Management**: Group admins can click **"Manage Budget"** on the group page at any time to define or update budget figures for existing or new groups.
+The frontend may be maintained in a separate folder or repository
+depending on the final project setup.
 
----
+## Getting Started
 
-## 3. How Calculations & Alerts Work
+### Prerequisites
 
-### Calculations
-All metrics are derived in real time from the group's expenses array:
-1. **Total Spent**: Sum of all valid positive expense amounts (`∑ expense.amount`).
-2. **Remaining Budget**: `totalBudget > 0 ? (totalBudget - totalSpent) : 0`. (If overspent, remaining is negative or displayed with an over-budget indicator).
-3. **Percentage Used**: `totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0`.
-4. **Category Breakdown**:
-   - For each of the core 4 categories (`Travel`, `Hotel / Stay`, `Food`, `Activities`):
-     - `spent`: Sum of `expense.amount` where `expense.category === catName`.
-     - `budget`: Category allocation entered during group creation or editing.
-     - `remaining`: `categoryBudget - categorySpent`.
-     - `percentUsed`: `(categorySpent / categoryBudget) * 100`.
-   - Any spending in non-core categories (e.g., Shopping, Groceries, Utilities) is grouped in a secondary breakdown so 100% of tracked expenses reconcile with the total.
+-   Node.js and npm
+-   A MongoDB Atlas cluster or another MongoDB instance
+-   Git (optional)
 
-### Alerts & Anti-Duplication
-Threshold alerts trigger at two key stages:
-1. **Warning Alert (80% to 100%)**:
-   - Condition: `percentUsed >= 80 && percentUsed <= 100`.
-   - In-page: Yellow/amber alert banner indicating percentage used and remaining budget.
-   - Toast: `SS.notifications.warning(...)` warning user of the 80% threshold.
-2. **Overspending Alert (> 100%)**:
-   - Condition: `totalSpent > totalBudget`.
-   - In-page: Red danger banner displaying the exact extra amount: `overAmount = totalSpent - totalBudget`.
-   - Progress Bar: Turns crimson/red.
-   - Toast: `SS.notifications.error(...)` notifying user of overspending.
-3. **Anti-Duplication State**:
-   - `SS.budget._notifiedState[groupId]` tracks the active alert tier (`'none' | 'warning' | 'danger'`).
-   - Alerts only fire when a state transition occurs (e.g., crossing from normal into warning, or warning into over-budget) or upon first page view.
-   - Filtering, searching, sorting, or re-rendering expenses does **not** spam toasts.
+### 1. Install dependencies
 
----
+Open a terminal in the `backend` directory and run:
 
-## 4. Validation and Alert Improvements
-
-The budget module validates values before saving:
-- Blank fields are treated as optional values (`0`).
-- Negative, non-numeric, non-finite, or amounts with more than two decimal places are rejected with a clear message.
-- When an overall budget is set, the sum of category limits cannot exceed it; the user is asked to adjust the total or category limits.
-- Category warning (80%+) and overspending (>100%) toasts are tracked independently, including when a group uses category budgets without an overall budget.
-- Re-rendering does not repeatedly fire the same category alert while the threshold state remains unchanged.
-
-## 5. Phase 2 Backend Migration Guide (Node.js, Express, MongoDB)
-
-When migrating SplitSmart to Phase 2 with a Node.js/Express and MongoDB/Mongoose backend, follow these steps to integrate the Budget System:
-
-### 1. Mongoose Schema Update
-Extend the `Group` schema in `models/Group.js`:
-```javascript
-const categoryBudgetSchema = new mongoose.Schema({
-  Travel: { type: Number, default: 0, min: 0 },
-  'Hotel / Stay': { type: Number, default: 0, min: 0 },
-  Food: { type: Number, default: 0, min: 0 },
-  Activities: { type: Number, default: 0, min: 0 }
-}, { _id: false });
-
-const budgetSchema = new mongoose.Schema({
-  total: { type: Number, default: 0, min: 0 },
-  categories: { type: categoryBudgetSchema, default: () => ({}) }
-}, { _id: false });
-
-const GroupSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  purpose: { type: String, enum: ['trip', 'household', 'custom'], required: true },
-  creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  expenses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Expense' }],
-  budget: { type: budgetSchema, default: () => ({}) },
-  meta: { type: Object, default: {} }
-}, { timestamps: true });
+``` bash
+npm install
 ```
 
-### 2. Express Controller Endpoints
-Add dedicated routes in `routes/groupRoutes.js`:
-- `POST /api/groups`: Accept `budget: { total, categories }` in the request body.
-- `PUT /api/groups/:id/budget`: Dedicated endpoint allowing group creator/admin to modify budget values:
-  ```javascript
-  exports.updateBudget = async (req, res) => {
-    const { id } = req.params;
-    const { total, categories } = req.body;
-    const group = await Group.findById(id);
-    if (!group) return res.status(404).json({ message: 'Group not found' });
-    if (group.creator.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Only group admin can modify budget' });
-    }
-    group.budget = {
-      total: Number(total) || 0,
-      categories: {
-        Travel: Number(categories?.Travel) || 0,
-        'Hotel / Stay': Number(categories?.['Hotel / Stay']) || 0,
-        Food: Number(categories?.Food) || 0,
-        Activities: Number(categories?.Activities) || 0
-      }
-    };
-    await group.save();
-    res.json({ message: 'Budget updated', budget: group.budget });
-  };
-  ```
+### 2. Configure environment variables
 
-### 3. Aggregation Pipeline for Budget Analytics
-In MongoDB, use an aggregation pipeline to compute category totals server-side if needed for large expense datasets:
-```javascript
-const stats = await Expense.aggregate([
-  { $match: { group: new mongoose.Types.ObjectId(groupId) } },
-  { $group: { _id: '$category', totalSpent: { $sum: '$amount' } } }
-]);
+Create a `.env` file inside the backend directory. Use the variable
+names expected by `config/db.js`, authentication, and email-invitation
+code.
+
+Example template:
+
+``` env
+PORT=3000
+MONGODB_URI=your_mongodb_connection_string
+FRONTEND_URL=http://localhost:5500
+RESEND_API_KEY=your_resend_api_key
 ```
 
-### 4. Database Migration Script
-For MongoDB instances with existing groups from Phase 1, run a one-time migration:
-```javascript
-await Group.updateMany(
-  { budget: { $exists: false } },
-  { $set: { budget: { total: 0, categories: { Travel: 0, 'Hotel / Stay': 0, Food: 0, Activities: 0 } } } }
-);
+**Important:** Your database variable may be named differently in
+`config/db.js` (for example, `MONGO_URI`). Use the exact name referenced
+by your code. Add any other variables required by the authentication and
+invitation modules. Never commit real API keys, database credentials, or
+secrets to GitHub.
+
+### 3. Start the backend
+
+From the `backend` directory:
+
+``` bash
+node server.js
 ```
+
+If the database connection succeeds, the server listens on the port
+defined by `PORT`, or on port `3000` if `PORT` is not set.
+
+### 4. Check the backend
+
+With the backend running locally, open:
+
+``` text
+http://localhost:3000/
+```
+
+Expected response:
+
+``` text
+SplitSmart Backend is running!
+```
+
+This confirms that the root route responds. It does not, by itself,
+verify every API or database operation.
+
+## API Route Prefixes
+
+The current `server.js` mounts these route modules:
+
+  Prefix                  Purpose
+  ----------------------- ------------------------------
+  `/api/health`           Health-check endpoints
+  `/api/auth`             Authentication endpoints
+  `/api/expenses`         Individual expense endpoints
+  `/api/groups`           Group-management endpoints
+  `/api/group-expenses`   Group expense endpoints
+
+Full endpoint paths and supported HTTP methods are defined in the
+corresponding files under `backend/routes/`. Check those files before
+using a specific endpoint.
+
+## Testing with Postman
+
+1.  Start the backend and confirm it is running.
+2.  Open Postman and create a request to the backend URL.
+3.  Select the HTTP method required by the route, such as `GET`, `POST`,
+    `PUT`, or `DELETE`.
+4.  For `POST` or `PUT` requests that accept JSON, select **Body → raw →
+    JSON** and provide the required fields.
+5.  Send the request and inspect the response and status code.
+6.  For operations on a specific group or expense, first fetch the
+    record and copy its `_id` from the response. Use that real ID in the
+    route path if the endpoint requires it.
+
+Example local base URL:
+
+``` text
+http://localhost:3000
+```
+
+Exact request paths and JSON fields depend on the final route/controller
+code. Do not assume a sample endpoint exists until you confirm it in the
+route files.
+
+## CORS and Frontend Configuration
+
+The backend uses CORS to allow configured frontend origins, including
+local development origins and the deployed Vercel frontend. Set
+`FRONTEND_URL` to the correct frontend URL in the deployment
+environment.
+
+The backend parses JSON request bodies with a maximum size of `1mb`:
+
+``` js
+app.use(express.json({ limit: "1mb" }));
+```
+
+Requests with JSON bodies larger than this limit may be rejected.
+
+## Deployment Notes
+
+-   **Frontend:** Deploy the frontend to Vercel and set its API base URL
+    to the deployed backend URL.
+-   **Backend:** Deploy the Node.js backend to Render and configure
+    environment variables in the Render dashboard.
+-   **Database:** Ensure the MongoDB Atlas connection string is correct
+    and the deployed backend is allowed to connect to the cluster.
+-   **CORS:** Set `FRONTEND_URL` to the production frontend URL.
+-   **Secrets:** Keep `.env` out of version control. Use the hosting
+    provider's environment-variable settings for production secrets.
+
+## Security Notes
+
+-   Do not commit `.env` files, database passwords, Resend API keys, or
+    authentication secrets.
+-   Validate and authorize requests in the relevant route/controller
+    code.
+-   Restrict CORS to the frontend origins you intend to allow.
+-   Avoid using real personal email addresses during demonstrations
+    unless you have permission.
+
+## Future Improvements
+
+-   Add settlement payment verification.
+-   Improve validation and error handling where needed.
+-   Add or expand automated tests for API endpoints.
+
+## Team / Contributors
+
+Add the final team member names and their contributions here before
+submitting the project.
+
+## License
+
+Add the license required by your institution or project team. If no
+license has been selected, remove this section or leave it marked as not
+yet specified.
