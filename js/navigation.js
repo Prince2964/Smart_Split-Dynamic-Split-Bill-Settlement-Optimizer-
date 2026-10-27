@@ -11,6 +11,7 @@ SS.navigation = {
       <a href="my-groups.html" data-nav="groups">My Groups</a>
       <a href="invitations.html" data-nav="invitations">Invitations</a>
       <a href="create-group.html" data-nav="create">Create Group</a>
+      <a href="settlement-history.html" data-nav="history">History</a>
     `;
         const actions = user
             ? `
@@ -30,17 +31,33 @@ SS.navigation = {
           <span class="brand-mark">S</span>
           <span>SplitSmart</span>
         </a>
-        <button class="mobile-toggle" id="mobileToggle" aria-label="Open navigation">☰</button>
-        <nav class="nav-links">${links}</nav>
-        <div class="nav-actions">${actions}</div>
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="nav-collapse" id="navCollapse">
+          <nav class="nav-links">${links}</nav>
+          <div class="nav-actions">${actions}</div>
+        </div>
       </div>`;
         const page = document.body.dataset.page;
-        const activeMap = { dashboard: 'dashboard', 'my-groups': 'groups', invitations: 'invitations', 'create-group': 'create' };
+        const activeMap = { dashboard: 'dashboard', 'my-groups': 'groups', invitations: 'invitations', 'create-group': 'create', 'settlement-history': 'history' };
         const active = activeMap[page];
         host.querySelector(`[data-nav="${active}"]`)?.classList.add('active');
         document.getElementById('logoutBtn')?.addEventListener('click', () => SS.auth.logout());
-        document.getElementById('mobileToggle')?.addEventListener('click', () => {
-            document.getElementById('navInner')?.classList.toggle('menu-open');
+        const toggleBtn = document.getElementById('mobileToggle');
+        const navInner = document.getElementById('navInner');
+        toggleBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = navInner?.classList.toggle('menu-open');
+            toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            toggleBtn.innerHTML = isOpen ? '✕' : '☰';
+        });
+        document.addEventListener('click', (e) => {
+            if (navInner?.classList.contains('menu-open') && !navInner.contains(e.target)) {
+                navInner.classList.remove('menu-open');
+                if (toggleBtn) {
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                    toggleBtn.innerHTML = '☰';
+                }
+            }
         });
     }
 };

@@ -1,4 +1,115 @@
 SS.groups = {
+    
+    fromApi(apiGroup) {
+        const user = SS.currentUser();
+
+        const members = (apiGroup.members || []).map(member => {
+            const populated = typeof member === "object" && member !== null;
+
+            const userId = String(
+                populated ? member._id || member.id : member
+            );
+
+            return {
+                userId,
+                name: populated
+                    ? member.name || "Member"
+                    : userId === user?.id ? user.name : "Member",
+                email: populated
+                    ? member.email || ""
+                    : userId === user?.id ? user.email : "",
+                status: "accepted",
+                joinedAt: apiGroup.createdAt || ""
+            };
+        });
+
+        const creatorId = String(
+            apiGroup.createdBy?._id ||
+            apiGroup.createdBy?.id ||
+            apiGroup.createdBy
+        );
+
+        return {
+            id: String(apiGroup._id || apiGroup.id),
+            name: apiGroup.name,
+            purpose: apiGroup.purpose || "custom",
+            creator: creatorId,
+            creatorName: apiGroup.createdBy?.name ||
+                (creatorId === user?.id ? user.name : "Group admin"),
+            createdAt: apiGroup.createdAt,
+            thumbnail: apiGroup.thumbnail || "",
+            members,
+            expenses: [],
+            settlementStatuses: apiGroup.settlementStatuses
+                ? (typeof apiGroup.settlementStatuses.toJSON === "function"
+                    ? apiGroup.settlementStatuses.toJSON()
+                    : apiGroup.settlementStatuses)
+                : {},
+            budget: {
+                total: Number(apiGroup.budget?.total) || 0,
+                categories: {
+                    "Travel": Number(apiGroup.budget?.categories?.Travel) || 0,
+                    "Hotel / Stay": Number(apiGroup.budget?.categories?.["Hotel / Stay"]) || 0,
+                    "Food": Number(apiGroup.budget?.categories?.Food) || 0,
+                    "Activities": Number(apiGroup.budget?.categories?.Activities) || 0
+                }
+            },
+            meta: {
+                ...(apiGroup.meta || {}),
+                description: apiGroup.meta?.description || apiGroup.description || ""
+            }
+        };
+    },
+
+    async createRemote(data) {
+        const user = SS.currentUser();
+
+        if (!user) {
+            throw new Error("Please log in.");
+        }
+
+        this.validate(data);
+
+        const budget = data.budget || {};
+
+        const response = await SS.api.request("/groups", {
+            method: "POST",
+            body: JSON.stringify({
+                name: String(data.name || "").trim(),
+                purpose: data.purpose,
+                description: String(data.description || "").trim(),
+                thumbnail: data.thumbnail || "",
+                budget: {
+                    total: Number(budget.total) || 0,
+                    categories: budget.categories || {}
+                },
+                meta: {
+                    destination: data.destination || "",
+                    startDate: data.startDate || "",
+                    endDate: data.endDate || "",
+                    address: data.address || "",
+                    description: data.description || "",
+                    customPurpose: data.customPurpose || ""
+                }
+            })
+        });
+
+        if (!response.group) {
+            throw new Error("The server did not return the created group.");
+        }
+
+        const group = this.fromApi(response.group);
+
+        const groups = SS.storage.groups().filter(
+            existing => existing.id !== group.id
+        );
+
+        groups.push(group);
+        SS.storage.replaceGroups(groups);
+
+        return group;
+    },
+
     validate(data = {}) {
         const name = String(data.name || '').trim();
         const purpose = String(data.purpose || '').trim();
@@ -33,9 +144,24 @@ SS.groups = {
             thumbnail: data.thumbnail || '',
             members: [{ userId: user.id, name: user.name, email: user.email, status: 'accepted', joinedAt: now }],
             expenses: [],
-            // A keyed status map avoids duplicate settlement records while keeping
-            // payment state separate from calculated debt.
             settlementStatuses: {},
+            budget: data.budget ? {
+                total: Number(data.budget.total) || 0,
+                categories: {
+                    'Travel': Number(data.budget.categories?.['Travel']) || 0,
+                    'Hotel / Stay': Number(data.budget.categories?.['Hotel / Stay']) || 0,
+                    'Food': Number(data.budget.categories?.['Food']) || 0,
+                    'Activities': Number(data.budget.categories?.['Activities']) || 0
+                }
+            } : {
+                total: 0,
+                categories: {
+                    'Travel': 0,
+                    'Hotel / Stay': 0,
+                    'Food': 0,
+                    'Activities': 0
+                }
+            },
             meta: {
                 destination: String(data.destination || '').trim(),
                 startDate: data.startDate || '',

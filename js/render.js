@@ -17,7 +17,7 @@ SS.render = {
           <div class="group-card-top"><span class="purpose-badge ${SS.escape(g.purpose)}">${SS.icon(g.purpose)} ${SS.escape(SS.label(g.purpose))}</span><span class="group-created">${SS.formatDate(g.createdAt)}</span></div>
           <h3>${SS.escape(g.name)}</h3>
           <p>${g.purpose === 'trip' && g.meta?.destination ? SS.escape(g.meta.destination) + ' · ' : ''}${members.length} members · ${expenses.length} expenses</p>
-          <div class="group-card-bottom"><strong>${SS.money(total)}</strong><a class="text-btn" href="group.html?id=${encodeURIComponent(g.id)}">Open group →</a></div>
+          <div class="group-card-bottom"><strong>${SS.money(total)}</strong><div class="group-card-actions"><a class="text-btn" href="group.html?id=${encodeURIComponent(g.id)}">Open group →</a></div></div>
         </div>
       </article>`;
         }).join('');
@@ -77,32 +77,49 @@ SS.render = {
         }));
     },
     expenses(group, host, options = {}) {
-        if (!host)
-            return;
-        const expenses = Array.isArray(group.expenses) ? group.expenses : [];
+        if (!host) return;
+        const allExpenses = Array.isArray(group.expenses) ? group.expenses.map(item => SS.expenses.normalize(item)) : [];
+        const expenses = SS.expenses.filters(allExpenses, options.filters || {});
         const user = SS.currentUser();
-        const canManage = e => Boolean(user && (e.addedBy === user.id || group.creator === user.id));
+        const canManage = expense => Boolean(user && (expense.addedBy === user.id || group.creator === user.id));
         if (!expenses.length) {
-            host.innerHTML = '<div class="empty-state compact"><div class="empty-icon">₹</div><h3>No expenses yet</h3><p>Add the first shared expense to start calculating balances.</p></div>';
+            host.innerHTML = `<div class="empty-state compact"><div class="empty-icon">₹</div><h3>${allExpenses.length ? 'No matching expenses' : 'No expenses yet'}</h3><p>${allExpenses.length ? 'Try changing your search or filters.' : 'Add the first shared expense to start calculating balances.'}</p></div>`;
             return;
         }
-        host.innerHTML = `<div class="expense-list">${[...expenses].reverse().map(e => {
-            const actions = canManage(e)
-                ? `<div class="expense-actions" style="display:flex;gap:6px;align-items:center;justify-content:flex-end"><button class="icon-btn edit-expense" data-id="${SS.escape(e.id)}" title="Edit expense" aria-label="Edit expense">✎</button><button class="icon-btn delete-expense" data-id="${SS.escape(e.id)}" title="Delete expense" aria-label="Delete expense">×</button></div>`
-                : '';
-            return `<article class="expense-row"><div class="expense-icon">₹</div><div class="expense-main"><strong>${SS.escape(e.description)}</strong><p>${SS.escape(e.paidByName || 'Unknown member')} paid · ${(Array.isArray(e.participants) ? e.participants.length : 0)} people · ${e.splitMode === 'manual' ? 'Manual split' : 'Equal split'} · ${SS.formatDate(e.date || e.createdAt)}</p></div><strong class="expense-amount">${SS.money(e.amount)}</strong>${actions}</article>`;
+        host.innerHTML = `<div class="expense-list">${expenses.map(expense => {
+            const actions = canManage(expense) ? `<div class="expense-actions"><button class="icon-btn edit-expense" data-id="${SS.escape(expense.id)}" title="Edit expense">✎</button><button class="icon-btn duplicate-expense" data-id="${SS.escape(expense.id)}" title="Duplicate expense">⧉</button><button class="icon-btn delete-expense" data-id="${SS.escape(expense.id)}" title="Delete expense">×</button></div>` : '';
+            const recurring = expense.isRecurring ? `<span class="expense-tag recurring-tag">↻ ${SS.escape(expense.frequency)}</span>` : '';
+            const note = expense.note ? `<p class="expense-note">${SS.escape(expense.note)}</p>` : '';
+            return `<article class="expense-row"><div class="expense-icon">${SS.categoryIcon(expense.category)}</div><div class="expense-main"><div class="expense-title-line"><strong>${SS.escape(expense.description)}</strong><span class="expense-tag">${SS.categoryIcon(expense.category)} ${SS.escape(expense.category)}</span>${recurring}</div><p>${SS.escape(expense.paidByName || 'Unknown member')} paid · ${expense.participants.length} people · ${expense.splitMode === 'manual' ? 'Manual split' : 'Equal split'} · ${SS.formatDate(expense.date || expense.createdAt)}</p>${note}</div><strong class="expense-amount">${SS.money(expense.amount)}</strong>${actions}</article>`;
         }).join('')}</div>`;
-        host.querySelectorAll('.edit-expense').forEach(b => b.addEventListener('click', () => options.onEdit?.(b.dataset.id)));
-        host.querySelectorAll('.delete-expense').forEach(b => b.addEventListener('click', () => {
-            if (!confirm('Delete this expense?'))
-                return;
+        host.querySelectorAll('.edit-expense').forEach(button => button.addEventListener('click', () => options.onEdit?.(button.dataset.id)));
+        host.querySelectorAll('.duplicate-expense').forEach(button => button.addEventListener('click', () => options.onDuplicate?.(button.dataset.id)));
+        host.querySelectorAll('.delete-expense').forEach(button => button.addEventListener('click', async () => {
+            if (!confirm('Delete this expense?')) return;
+            button.disabled = true;
             try {
-                SS.expenses.remove(group.id, b.dataset.id);
-                options.onChanged?.();
-                SS.toast('Expense deleted. Balances updated.');
-            }
-            catch (e) {
-                SS.toast(e.message);
+                const result = options.onDelete
+                    ? await options.onDelete(button.dataset.id)
+                    : SS.expenses.remove(group.id, button.dataset.id).expense;
+                if (!options.onDelete) options.onChanged?.();
+                SS.notifications.warning('Expense deleted', {
+                    timeout: 8000,
+                    actionLabel: 'UNDO',
+                    onAction: async () => {
+                        try {
+                            if (options.onUndo) await options.onUndo(result);
+                            else {
+                                SS.expenses.restore(group.id, result);
+                                options.onChanged?.();
+                            }
+                            SS.notifications.success('Expense restored successfully');
+                        } catch (error) { SS.notifications.error(error.message); }
+                    }
+                });
+            } catch (error) {
+                SS.notifications.error(error.message || 'Could not delete expense.');
+            } finally {
+                button.disabled = false;
             }
         }));
     },
@@ -125,9 +142,10 @@ SS.render = {
                 : `<button class="btn btn-soft btn-sm mark-settlement-paid" data-from="${SS.escape(s.fromId)}" data-to="${SS.escape(s.toId)}" data-amount="${SS.escape(s.amount)}">Mark Paid</button>`;
             return `<div class="settlement-row"><div class="settlement-flow"><strong>${SS.escape(s.from)}</strong><span>→</span><strong>${SS.escape(s.to)}</strong></div><div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end"><strong>${SS.money(s.amount)}</strong>${action}</div></div>`;
         }).join('');
-        host.querySelectorAll('.mark-settlement-paid').forEach(button => button.addEventListener('click', () => {
+        host.querySelectorAll('.mark-settlement-paid').forEach(button => button.addEventListener('click', async () => {
+            button.disabled = true;
             try {
-                SS.calculations.markSettlementPaid(group.id, {
+                await SS.calculations.markSettlementPaid(group.id, {
                     fromId: button.dataset.from,
                     toId: button.dataset.to,
                     amount: Number(button.dataset.amount)
@@ -136,7 +154,8 @@ SS.render = {
                 SS.toast('Settlement marked as paid.');
             }
             catch (e) {
-                SS.toast(e.message);
+                SS.toast(e.message || 'Could not save settlement status.');
+                button.disabled = false;
             }
         }));
     }

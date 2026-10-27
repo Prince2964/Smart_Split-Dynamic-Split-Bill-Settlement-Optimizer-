@@ -153,3 +153,64 @@
     color:var(--muted);
     font-size:.72rem
 }
+
+/* --- Responsive Layout for Tablet & Mobile --- */
+@media (max-width: 768px) {
+    .creation-head h1 {
+        font-size: 2.1rem;
+    }
+    .purpose-switcher {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .purpose-tab {
+        padding: 12px 10px;
+        grid-template-columns: 32px 1fr;
+        column-gap: 8px;
+    }
+    .purpose-tab span {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+    .purpose-tab b {
+        font-size: 0.88rem;
+    }
+    .purpose-tab small {
+        font-size: 0.72rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .creation-head {
+        padding: 15px 0 10px;
+    }
+    .creation-head h1 {
+        font-size: 1.75rem;
+    }
+    .purpose-switcher {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .purpose-tab {
+        padding: 14px 16px;
+        grid-template-columns: 38px 1fr;
+        column-gap: 12px;
+    }
+    .thumbnail-picker {
+        grid-template-columns: 1fr;
+    }
+    .thumbnail-preview {
+        height: 120px;
+    }
+    .form-actions {
+        flex-direction: column-reverse;
+        width: 100%;
+        gap: 8px;
+    }
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+}
